@@ -1,0 +1,219 @@
+
+
+    
+        (function(){
+            if (typeof (HCSB) == 'undefined') {
+    HCSB = {
+        _options: [],
+        _scriptLoaded: false,
+        _domLoaded: false,
+        _domLoadInit: false,
+        _sbExternalConfiguration: {},
+
+        loadCSS: function (id, href, appendOrInsertBefore) {
+            appendOrInsertBefore = (typeof appendOrInsertBefore === "undefined") ? "i" : appendOrInsertBefore;
+
+            if (!document.getElementById(id)) {
+                var css = document.createElement("link");
+                css.type = "text/css";
+                css.rel = "stylesheet";
+                css.href = href;
+                css.id = id;
+                var link;
+
+                if (appendOrInsertBefore == "i") {
+                    link = document.getElementsByTagName("link")[0];
+                    if (link) {
+                        link.parentNode.insertBefore(css, link);
+                    }
+                }
+
+                if (!link || appendOrInsertBefore == "a") {
+                    document.getElementsByTagName("head")[0].appendChild(css);
+                }
+            }
+        },
+
+        loadScript: function (id, src) {
+            // load the main JS library..
+            if (!document.getElementById(id)) {
+                // create script
+                var js = document.createElement("script");
+                js.src = src;
+                js.id = id;
+
+                // bind load event
+                if (js.addEventListener) {
+                    js.addEventListener('load', function () {
+                        HCSB._scriptLoaded = true;
+                        HCSB.executeCallBack();
+
+                    }, false);
+                }
+                else {
+                    // old IE < 9
+                    js.onreadystatechange = function () {
+                        if (js.readyState in { loaded: 1, complete: 1 }) {
+                            js.onreadystatechange = null;
+                            HCSB._scriptLoaded = true;
+                            HCSB.executeCallBack();
+                        }
+                    };
+                }
+
+                // insert script
+                var pjs = document.getElementsByTagName("script")[0];
+                pjs.parentNode.insertBefore(js, pjs);
+            }
+        },
+
+
+        executeCallBack: function () {
+            if (HCSB._scriptLoaded && HCSB._domLoaded) {
+                for (var i = 0; i < HCSB._options.length; i++) {
+                    HCSB.callBack(HCSB._options[i]);
+                }
+            }
+        },
+
+        callBack: function (options) {
+            var searchBox = new HCSB_SearchBox;
+
+            var configuration = this._sbExternalConfiguration[options.SbID];
+            options.externalConfiguration = configuration;
+
+            searchBox.init(options);
+        },
+
+        initDOMLoadEvent: function () {
+            //  our load event
+            var loadFunc = function() {
+                HCSB._domLoaded = true;
+                HCSB.executeCallBack();
+            };
+
+            if (document.readyState) {
+
+                if (document.readyState !== "complete") {
+                    if (document.onreadystatechange !== undefined) {
+                        if (this._domLoadInit !== true) {
+                            this._domLoadInit = true;
+
+                            var event = function () {
+                                if (document.readyState === "complete" ||
+                                    document.readyState === "interactive") {
+                                    document.onreadystatechange = null;
+                                    loadFunc();
+                                    document.removeEventListener("readystatechange", event);
+                                }
+                            }
+
+                            document.addEventListener("readystatechange", event);
+                        }
+                    } else { //firefox 3.6 and below problem where onreadystatechange is undefined
+                        if (this._domLoadInit !== true) {
+                            this._domLoadInit = true;
+                            document.addEventListener('DOMContentLoaded', function () {
+                                loadFunc();
+                            }, false);
+                        }
+                    }
+                } else {
+                    loadFunc();
+                }
+            }
+            else {
+                 if (this._domLoadInit !== true) {
+                    this._domLoadInit = true;
+                    //Others
+                    document.onload = function () {
+                        loadFunc();
+                    };
+                }
+            }
+        },
+
+        buildSB: function (options, html, css) {
+            this.loadResources(options);
+            this._options.push(options);
+            var j = document.getElementsByTagName("script");
+            var i = j.length;
+
+            for (var k = 0; k < i; k++) {
+                //find script tag by its src url to determine where to write out search box, add done parameter in the src to identify which sb has loaded
+                if (j[k].src && j[k].src.toLowerCase().indexOf("/searchbox/" + options.SbID) > -1) {
+
+                    if (j[k].src.indexOf("&done") != -1 || j[k].src.indexOf("?done") != -1)
+                        return;
+
+                    //write search box css to page
+                    if (!document.getElementById("hcsbcss_" + options.uiid)) {
+                        var cssContainer = document.createElement("style");
+                        cssContainer.setAttribute("id", "hcsbcss_" + options.uiid);
+                        cssContainer.type = 'text/css';
+
+                        if (cssContainer.styleSheet) {
+                            cssContainer.styleSheet.cssText = css.css;
+                        } else {
+                            cssContainer.innerHTML = css.css;
+                        }
+
+                        document.getElementsByTagName("head")[0].appendChild(cssContainer);
+                    }
+
+                    //write search box html to page
+                    if (!document.getElementById('SB_' + options.uiid)) {
+                        var container = document.createElement("div");
+                        container.setAttribute("id", 'SB_' + options.uiid);
+                        container.setAttribute("class", options.searchBoxContainerCssClass);
+                        if (options.layout) {
+                            container.setAttribute("class", options.containerLayoutClass);
+                        }
+
+                        html = html.Html.replace("\u003c", "<");
+                        html = html.replace("\u003e", ">");
+
+                        container.innerHTML = html;
+
+                        //targeted placement?
+                        if (options.target) {
+                            var targetContainer = document.getElementById(options.target);
+                            if (targetContainer) {
+                                targetContainer.appendChild(container);
+                            }
+                        }
+                        else {
+                            j[k].parentNode.insertBefore(container, j[k]);
+                        }
+                    }
+
+                    j[k].setAttribute("src", j[k].src + (j[k].src.indexOf('?') == -1 ? "?done" : "&done"));
+                }
+            }
+            options.referrer = document.referrer;
+            this.initDOMLoadEvent();
+
+        },
+
+        //load all external resources ie scripts, css etc
+        loadResources: function (options) {
+            this.loadScript("hcsb_extref", "//" + options.scriptResourceUrl);
+            this.loadCSS("hcsb_sbcss", "//" + options.cssResourceUrl);
+        },
+
+        sbExternalConfiguration: function (sbid, options) {
+            this._sbExternalConfiguration[sbid] = options;
+        }
+    };
+}
+            var html = "\u003cdiv class=\"hcsb_outer  hcsb_generic\"\u003e\r\n    \u003ch2 class=\"hcsb_topTitle\"\u003e找最便宜的住宿！\u003c/h2\u003e\r\n    \u003cdiv class=\"hcsb_content\"\u003e\r\n        \u003cfieldset\u003e\r\n                \u003cdiv class=\"hcsb_citySearchWrapper\"\u003e\r\n                    \u003clabel class=\"hcsb_citySearchLabel\"\u003e目的地\u003c/label\u003e\r\n                    \u003cinput type=\"text\" id=\"I-SB_e9a667be16\" class=\"hcsb_citySearch hcsb_hint\" title=\"例如：城市、地區、行政區或特定飯店\" /\u003e\r\n                \u003c/div\u003e\r\n            \u003cdiv class=\"hcsb_checkinDateWrapper hcsb_clearfix\"\u003e\r\n                \u003clabel class=\"hcsb_checkinDateLabel\"\u003e入住日期\u003c/label\u003e\r\n                \u003cdiv class=\"hcsb_checkinDateContent\"\u003e\r\n                    \u003cinput type=\"hidden\" id=\"CHECKIN-SB_e9a667be16\" class=\"hcsb_checkinDate\"/\u003e\r\n\r\n\r\n\u003cselect class=\"hcsb_checkinMonth\" data-val=\"true\" data-val-number=\"The field Month must be a number.\" data-val-required=\"The Month field is required.\" id=\"CHECKINM-SB_e9a667be16\" name=\"Month\"\u003e\u003coption value=\"-1\"\u003e月\u003c/option\u003e\r\n\u003coption value=\"2021-5\"\u003e2021年5月\u003c/option\u003e\r\n\u003coption value=\"2021-6\"\u003e2021年6月\u003c/option\u003e\r\n\u003coption value=\"2021-7\"\u003e2021年7月\u003c/option\u003e\r\n\u003coption value=\"2021-8\"\u003e2021年8月\u003c/option\u003e\r\n\u003coption value=\"2021-9\"\u003e2021年9月\u003c/option\u003e\r\n\u003coption value=\"2021-10\"\u003e2021年10月\u003c/option\u003e\r\n\u003coption value=\"2021-11\"\u003e2021年11月\u003c/option\u003e\r\n\u003coption value=\"2021-12\"\u003e2021年12月\u003c/option\u003e\r\n\u003coption value=\"2022-1\"\u003e2022年1月\u003c/option\u003e\r\n\u003coption value=\"2022-2\"\u003e2022年2月\u003c/option\u003e\r\n\u003coption value=\"2022-3\"\u003e2022年3月\u003c/option\u003e\r\n\u003coption value=\"2022-4\"\u003e2022年4月\u003c/option\u003e\r\n\u003coption value=\"2022-5\"\u003e2022年5月\u003c/option\u003e\r\n\u003c/select\u003e\u003cselect class=\"hcsb_checkinDay\" data-val=\"true\" data-val-number=\"The field Day must be a number.\" data-val-required=\"The Day field is required.\" id=\"CHECKIND-SB_e9a667be16\" name=\"Day\"\u003e\u003coption value=\"-1\"\u003e日\u003c/option\u003e\r\n\u003coption value=\"1\"\u003e1日\u003c/option\u003e\r\n\u003coption value=\"2\"\u003e2日\u003c/option\u003e\r\n\u003coption value=\"3\"\u003e3日\u003c/option\u003e\r\n\u003coption value=\"4\"\u003e4日\u003c/option\u003e\r\n\u003coption value=\"5\"\u003e5日\u003c/option\u003e\r\n\u003coption value=\"6\"\u003e6日\u003c/option\u003e\r\n\u003coption value=\"7\"\u003e7日\u003c/option\u003e\r\n\u003coption value=\"8\"\u003e8日\u003c/option\u003e\r\n\u003coption value=\"9\"\u003e9日\u003c/option\u003e\r\n\u003coption value=\"10\"\u003e10日\u003c/option\u003e\r\n\u003coption value=\"11\"\u003e11日\u003c/option\u003e\r\n\u003coption value=\"12\"\u003e12日\u003c/option\u003e\r\n\u003coption value=\"13\"\u003e13日\u003c/option\u003e\r\n\u003coption value=\"14\"\u003e14日\u003c/option\u003e\r\n\u003coption value=\"15\"\u003e15日\u003c/option\u003e\r\n\u003coption value=\"16\"\u003e16日\u003c/option\u003e\r\n\u003coption value=\"17\"\u003e17日\u003c/option\u003e\r\n\u003coption value=\"18\"\u003e18日\u003c/option\u003e\r\n\u003coption value=\"19\"\u003e19日\u003c/option\u003e\r\n\u003coption value=\"20\"\u003e20日\u003c/option\u003e\r\n\u003coption value=\"21\"\u003e21日\u003c/option\u003e\r\n\u003coption value=\"22\"\u003e22日\u003c/option\u003e\r\n\u003coption value=\"23\"\u003e23日\u003c/option\u003e\r\n\u003coption value=\"24\"\u003e24日\u003c/option\u003e\r\n\u003coption value=\"25\"\u003e25日\u003c/option\u003e\r\n\u003coption value=\"26\"\u003e26日\u003c/option\u003e\r\n\u003coption value=\"27\"\u003e27日\u003c/option\u003e\r\n\u003coption value=\"28\"\u003e28日\u003c/option\u003e\r\n\u003coption value=\"29\"\u003e29日\u003c/option\u003e\r\n\u003coption value=\"30\"\u003e30日\u003c/option\u003e\r\n\u003coption value=\"31\"\u003e31日\u003c/option\u003e\r\n\u003c/select\u003e\r\n                \u003c/div\u003e\r\n            \u003c/div\u003e\r\n            \u003cdiv class=\"hcsb_checkoutDateWrapper hcsb_clearfix\"\u003e\r\n                \u003clabel class=\"hcsb_checkoutDateLabel\"\u003e退房日期\u003c/label\u003e\r\n                \u003cdiv class=\"hcsb_checkoutDateContent\"\u003e\r\n                    \u003cinput type=\"hidden\" id=\"CHECKOUT-SB_e9a667be16\"  class=\"hcsb_checkoutDate\"/\u003e\r\n\r\n\r\n\u003cselect class=\"hcsb_checkoutMonth\" data-val=\"true\" data-val-number=\"The field Month must be a number.\" data-val-required=\"The Month field is required.\" id=\"CHECKOUTM-SB_e9a667be16\" name=\"Month\"\u003e\u003coption value=\"-1\"\u003e月\u003c/option\u003e\r\n\u003coption value=\"2021-5\"\u003e2021年5月\u003c/option\u003e\r\n\u003coption value=\"2021-6\"\u003e2021年6月\u003c/option\u003e\r\n\u003coption value=\"2021-7\"\u003e2021年7月\u003c/option\u003e\r\n\u003coption value=\"2021-8\"\u003e2021年8月\u003c/option\u003e\r\n\u003coption value=\"2021-9\"\u003e2021年9月\u003c/option\u003e\r\n\u003coption value=\"2021-10\"\u003e2021年10月\u003c/option\u003e\r\n\u003coption value=\"2021-11\"\u003e2021年11月\u003c/option\u003e\r\n\u003coption value=\"2021-12\"\u003e2021年12月\u003c/option\u003e\r\n\u003coption value=\"2022-1\"\u003e2022年1月\u003c/option\u003e\r\n\u003coption value=\"2022-2\"\u003e2022年2月\u003c/option\u003e\r\n\u003coption value=\"2022-3\"\u003e2022年3月\u003c/option\u003e\r\n\u003coption value=\"2022-4\"\u003e2022年4月\u003c/option\u003e\r\n\u003coption value=\"2022-5\"\u003e2022年5月\u003c/option\u003e\r\n\u003c/select\u003e\u003cselect class=\"hcsb_checkoutDay\" data-val=\"true\" data-val-number=\"The field Day must be a number.\" data-val-required=\"The Day field is required.\" id=\"CHECKOUTD-SB_e9a667be16\" name=\"Day\"\u003e\u003coption value=\"-1\"\u003e日\u003c/option\u003e\r\n\u003coption value=\"1\"\u003e1日\u003c/option\u003e\r\n\u003coption value=\"2\"\u003e2日\u003c/option\u003e\r\n\u003coption value=\"3\"\u003e3日\u003c/option\u003e\r\n\u003coption value=\"4\"\u003e4日\u003c/option\u003e\r\n\u003coption value=\"5\"\u003e5日\u003c/option\u003e\r\n\u003coption value=\"6\"\u003e6日\u003c/option\u003e\r\n\u003coption value=\"7\"\u003e7日\u003c/option\u003e\r\n\u003coption value=\"8\"\u003e8日\u003c/option\u003e\r\n\u003coption value=\"9\"\u003e9日\u003c/option\u003e\r\n\u003coption value=\"10\"\u003e10日\u003c/option\u003e\r\n\u003coption value=\"11\"\u003e11日\u003c/option\u003e\r\n\u003coption value=\"12\"\u003e12日\u003c/option\u003e\r\n\u003coption value=\"13\"\u003e13日\u003c/option\u003e\r\n\u003coption value=\"14\"\u003e14日\u003c/option\u003e\r\n\u003coption value=\"15\"\u003e15日\u003c/option\u003e\r\n\u003coption value=\"16\"\u003e16日\u003c/option\u003e\r\n\u003coption value=\"17\"\u003e17日\u003c/option\u003e\r\n\u003coption value=\"18\"\u003e18日\u003c/option\u003e\r\n\u003coption value=\"19\"\u003e19日\u003c/option\u003e\r\n\u003coption value=\"20\"\u003e20日\u003c/option\u003e\r\n\u003coption value=\"21\"\u003e21日\u003c/option\u003e\r\n\u003coption value=\"22\"\u003e22日\u003c/option\u003e\r\n\u003coption value=\"23\"\u003e23日\u003c/option\u003e\r\n\u003coption value=\"24\"\u003e24日\u003c/option\u003e\r\n\u003coption value=\"25\"\u003e25日\u003c/option\u003e\r\n\u003coption value=\"26\"\u003e26日\u003c/option\u003e\r\n\u003coption value=\"27\"\u003e27日\u003c/option\u003e\r\n\u003coption value=\"28\"\u003e28日\u003c/option\u003e\r\n\u003coption value=\"29\"\u003e29日\u003c/option\u003e\r\n\u003coption value=\"30\"\u003e30日\u003c/option\u003e\r\n\u003coption value=\"31\"\u003e31日\u003c/option\u003e\r\n\u003c/select\u003e\r\n                \u003c/div\u003e\r\n            \u003c/div\u003e\r\n            \u003cdiv class=\"hcsb_noDatesWrapper\"\u003e\r\n                \u003cinput type=\"checkbox\" id=\"NODATE-SB_e9a667be16\" class=\"hcsb_noDate\" /\u003e\r\n                \u003clabel class=\"hcsb_noDatesLabel\" for=\"NODATE-SB_e9a667be16\"\u003e暫不指定日期\u003c/label\u003e\r\n            \u003c/div\u003e\r\n            \u003cdiv class=\"hcsb_guestsRoomsWrapper\"\u003e\r\n                \u003clabel class=\"hcsb_guestsLabel\"\u003e入住人數\u003c/label\u003e\r\n                \u003cselect id=\"G-SB_e9a667be16\" class=\"hcsb_guests\"\u003e\r\n                    \u003coption value=\"1-1\"\u003e1位大人\u003c/option\u003e\r\n                    \u003coption selected=\"selected\" value=\"2-1\"\u003e2位大人同住一間房\u003c/option\u003e\r\n                    \u003coption value=\"3-1\"\u003e3位大人同住一間房\u003c/option\u003e\r\n                    \u003coption value=\"4-1\"\u003e4位大人同住一間房\u003c/option\u003e\r\n                    \u003coption value=\"2-2\"\u003e2位大人分住兩間房\u003c/option\u003e\r\n                    \u003coption value=\"0\"\u003e需要更多房間？或有小孩同行？\u003c/option\u003e\r\n                \u003c/select\u003e\r\n            \u003c/div\u003e\r\n            \u003ca id=\"SB-SB_e9a667be16\" class=\"hcsb_searchButton\"\u003e搜尋\u003c/a\u003e\r\n        \u003c/fieldset\u003e\r\n        \u003cdiv class=\"hcsb_anchor\"\u003e\u003c/div\u003e\r\n    \u003c/div\u003e\r\n        \u003cimg class=\"hcsb_poweredBy\" src=\"//sbhc.portalhc.com/SearchBox/Image/Dark/poweredby_hotelscombined.png?cdn=1.0.2021.126001-Cf0fafe0fdaa03de40b6e61e885a909881fea89e0\" alt=\"\" /\u003e\r\n\u003c/div\u003e\r\n\r\n";
+            var options = {"SbID":407798,"languageCode":"TW","uiid":"e9a667be16","affiliateId":184124,"brandId":0,"siteID":38,"domain":"www.hotelscombined.com.tw","openNewWindow":true,"defaultTitle":"搜尋飯店","displayPoweredByLogo":true,"title":"找最便宜的住宿！","searchBoxType":0,"label":"acupoint361","autoComplete":true,"sbScriptRenderUrl":"https://sbhc.portalhc.com/184124/SearchBox/407798?done","calendar":{"closeText":"關閉","prevText":"上個月","nextText":"下個月","currentText":"今天","monthNames":["一月","二月","三月","四月","五月","六月","七月","八月","九月","十月","十一月","十二月"],"monthNamesShort":["1 月","2 月","3 月","4 月","5 月","6 月","7 月","8 月","9 月","10 月","11 月","12 月"],"dayNames":["星期日","星期一","星期二","星期三","星期四","星期五","星期六"],"dayNamesShort":["日","一","二","三","四","五","六"],"dayNamesMin":["日","一","二","三","四","五","六"],"weekHeader":"Wk","dateFormat":"yy-mm-dd","firstDay":0,"isRTL":false,"showMonthAfterYear":true,"yearSuffix":" 年","dayHelpText":"日","showDayAfterMonth":true,"dayDropdownFormat":"[Day]日","monthDropdownFormat":"[Year]年[MonthNo]月","datedropdownMonthYearLongFormat":"[InsertYear] [InsertMonthName]"},"translations":{"dateError":"請輸入你的入住和退房日期","citySearchHintError":"請輸入城市、地區、國家、地標、飯店或區域的名稱","roomConfigEnterAllAges":"請分別輸入所有小孩的年齡","roomConfigEnterAgeOfChild":"請輸入小孩的年齡","roomConfigAgesBetween":"所有年齡必須介於0至17歲（含）之間","roomConfigAtLeast1Adult1Child":"請選擇至少1位大人或1位小孩","adultHelpText":"大人","roomHelpText":"第[InsertRoomNumber]間：","childrenHelpText":"小孩","childrenAgeHelpText":"小孩的年齡","missingAgeError":"請分別輸入所有小孩的年齡","ageError":"所有年齡必須介於0至17歲（含）之間","submit":"發表","periodOfStayError":"你的住宿的時間不應該超過30天。","addRoom":"增加房間","remove":"刪除","noGuestsInRoom":"請選擇至少1位大人或1位小孩","autoSuggestionMoreOptions":"搜尋有關於\"[InsertTerm]\"的更多選項","checkOutBeforeCheckIn":"請確保退房日期必須晚於入住日期","checkoutCheckinInFuture":"請確認入住與退房日期是未來日期","isRtl":false,"bookWithinOneYear":"你不能提前一年以上預訂"},"requestDomain":"sbhc.portalhc.com","hotelID":0,"fontSizeConfiguration":"hcsb_font_heading_size|20,hcsb_font_label_size|14,hcsb_font_input_size|15,hcsb_font_error_size|12,hcsb_font_button_size|22","fontFamily":"arial,verdana,helvetica,sans-serif","IsPreview":false,"templateVersion":"v1","templateStyle":"v5.css","searchBoxContainerCssClass":"hcsb_container hcsb_ac","colourTheme":"hcsb_backgroundcolor|#FAFAFA,hcsb_f_bordercolor|#EEEEEE,hcsb_f_backgroundcolor|#FAFAFA,hcsb_f_i_color|#4E4E4E,hcsb_f_i_backgroundcolor|#FFFFFF,hcsb_f_i_bordercolor|#ACADB2,hcsb_f_lbl_color|#777777,hcsb_hd_color|#00AEF0,hcsb_hd_backgroundcolor|transparent,hcsb_btn_color|#FFFFFF,hcsb_btn_backgroundcolor|#39B54A,hcsb_hd_cal_backgroundcolor|#00AEF0","height":0,"width":0,"scriptResourceUrl":"sbhc.portalhc.com/Script/JsMapper.ashx?key=/areas/responsivesearchbox.js&cdn=1.0.2021.126001-Cf0fafe0fdaa03de40b6e61e885a909881fea89e0","cssResourceUrl":"sbhc.portalhc.com/SearchBox/Style/hc_searchbox.css?cdn=1.0.2021.126001-Cf0fafe0fdaa03de40b6e61e885a909881fea89e0","isMobile":false,"isResponsive":true,"roomsInline":true,"turnOnPoweredByLogo":false,"UtcNow":"2021-05-19T06:08:00.0992557Z","UtcNowDay":19,"UtcNowMonth":5,"UtcNowYear":2021,"ImageSet":"Dark","destinationTextHint":"例如：城市、地區、行政區或特定飯店","containerLayoutClass":""}
+            var css = "#SB_e9a667be16,#SB_e9a667be16 div,#SB_e9a667be16 h1,#SB_e9a667be16 h2,#SB_e9a667be16 fieldset,#SB_e9a667be16 span,#SB_e9a667be16 img,#SB_e9a667be16 label,#SB_e9a667be16 select,#EX-SB_e9a667be16,#EX-SB_e9a667be16 div,#EX-SB_e9a667be16 h1,#EX-SB_e9a667be16 h2,#EX-SB_e9a667be16 fieldset,#EX-SB_e9a667be16 span,#EX-SB_e9a667be16 img,#EX-SB_e9a667be16 label,#EX-SB_e9a667be16 select{padding:0;margin:0;font-size:13px;font-weight:normal;font-family:arial,verdana,helvetica,sans-serif;vertical-align:baseline;border:0;background:none;color:#333;text-align:left;line-height:normal;float:none;position:relative;list-style:none;text-indent:0;top:auto;left:auto;bottom:auto;right:auto;-o-box-shadow:none;-moz-box-shadow:none;-webkit-box-shadow:none;box-shadow:none;-o-border-radius:0;-moz-border-radius:0;-webkit-border-radius:0;border-radius:0;-ms-filter:none;filter:none}#SB_e9a667be16 span,#SB_e9a667be16 img,#SB_e9a667be16 select,#EX-SB_e9a667be16 select,#EX-SB_e9a667be16 span{display:inline;white-space:nowrap}#SB_e9a667be16,#SB_e9a667be16 div,#SB_e9a667be16 h1,#SB_e9a667be16 h2,#SB_e9a667be16 fieldset,#EX-SB_e9a667be16,#EX-SB_e9a667be16 div,#EX-SB_e9a667be16 h1,#EX-SB_e9a667be16 h2,#EX-SB_e9a667be16 fieldset{display:block}#SB_e9a667be16 a,#SB_e9a667be16 a:link,#SB_e9a667be16 a:hover,#SB_e9a667be16 a:visited,#SB_e9a667be16 a:active,#SB_e9a667be16 a,#SB_e9a667be16 a:link,#SB_e9a667be16 a:hover,#SB_e9a667be16 a:visited,#SB_e9a667be16 a:active,#SB_e9a667be16 a img{display:inline;float:none;padding:0;margin:0;position:relative;top:auto;left:auto;right:auto;bottom:auto;color:#333;font-size:13px;font-weight:normal;font-family:arial,verdana,helvetica,sans-serif;border:none;line-height:normal;text-decoration:underline;background:none;-o-box-shadow:none;-moz-box-shadow:none;-webkit-box-shadow:none;box-shadow:none;-o-border-radius:0;-moz-border-radius:0;-webkit-border-radius:0;border-radius:0;-ms-filter:none;filter:none}#SB_e9a667be16 input,#EX-SB_e9a667be16 input{font-size:13px;font-weight:normal;font-family:arial,verdana,helvetica,sans-serif;padding:0;margin:0;display:inline;position:relative;top:auto;left:auto;bottom:auto;right:auto;text-indent:0;-o-box-shadow:none;-moz-box-shadow:none;-webkit-box-shadow:none;box-shadow:none;-o-border-radius:0;-moz-border-radius:0;-webkit-border-radius:0;border-radius:0;-ms-filter:none;filter:none}#SB_e9a667be16 h1,#SB_e9a667be16 h2{font-size:20px;font-weight:bold;color:#00aef0;background:transparent}#SB_e9a667be16 label,#EX-SB_e9a667be16 label{font-size:14px;color:#777;display:inline}#SB_e9a667be16 input,#SB_e9a667be16 select,#EX-SB_e9a667be16 input,#EX-SB_e9a667be16 select{font-size:15px;border:1px solid #acadb2;color:#4e4e4e;background-color:#fff;border-radius:2px;-o-border-radius:2px;-moz-border-radius:2px;-webkit-border-radius:2px}#SB_e9a667be16 a.hcsb_searchButton,#SB_e9a667be16 a.hcsb_searchButton:hover{font-size:22px;background-color:#39b54a;font-weight:bold;color:#fff;text-align:center;text-decoration:none;display:block;margin-top:.75em;border-radius:2px;-o-border-radius:2px;-moz-border-radius:2px;-webkit-border-radius:2px;cursor:pointer;padding:.5em 0}#EX-SB_e9a667be16 .hcsb_error{font-size:12px;border-radius:3px;-o-border-radius:3px;-moz-border-radius:3px;-webkit-border-radius:3px;background-color:#900;color:#fff}#hcsb_bodyElements .dp-SB_e9a667be16 .ui-widget-header{background-color:#00aef0;border:none;height:2em}#hcsb_bodyElements .dp-SB_e9a667be16 .ui-state-hover,#hcsb_bodyElements .dp-SB_e9a667be16 .ui-widget-content .ui-state-hover,#hcsb_bodyElements .dp-SB_e9a667be16 .ui-widget-header .ui-state-hover,#hcsb_bodyElements .dp-SB_e9a667be16 .ui-state-focus,#hcsb_bodyElements .dp-SB_e9a667be16 .ui-widget-content .ui-state-focus,#hcsb_bodyElements .dp-SB_e9a667be16 .ui-widget-header .ui-state-focus{background-image:none}#hcsb_bodyElements .dp-SB_e9a667be16 .ui-state-hover,#hcsb_bodyElements .dp-SB_e9a667be16 .ui-widget-content .ui-state-hover,#hcsb_bodyElements .dp-SB_e9a667be16 .ui-widget-header .ui-state-hover,#hcsb_bodyElements .dp-SB_e9a667be16 .ui-state-focus,#hcsb_bodyElements .dp-SB_e9a667be16 .ui-widget-content .ui-state-focus,#hcsb_bodyElements .dp-SB_e9a667be16 .ui-widget-header .ui-state-focus{background-color:#39b54a;color:#fff}#hcsb_bodyElements .dp-SB_e9a667be16 .ui-widget-header .ui-datepicker-title .ui-datepicker-year,#hcsb_bodyElements .dp-SB_e9a667be16 .ui-widget-header .ui-datepicker-title .ui-datepicker-month{display:inline;border:0}#hcsb_bodyElements .dp-SB_e9a667be16.ui-corner-all,#hcsb_bodyElements .dp-SB_e9a667be16 .ui-corner-right,#hcsb_bodyElements .dp-SB_e9a667be16 .ui-corner-left{border-radius:0}#hcsb_bodyElements .ui-autocomplete .ui-state-hover{background-color:#39b54a}#SB_e9a667be16{position:relative;z-index:500;overflow:hidden;background-color:#fafafa;background-position:center center;background-repeat:no-repeat;display:none}#SB_e9a667be16 .hcsb_outer{padding:0 13px 13px;overflow:hidden}#SB_e9a667be16 .hcsb_content{position:relative;overflow:hidden;text-align:left;background-color:#fafafa;padding:0;border:0;border-radius:3px;-o-border-radius:3px;-moz-border-radius:3px;-webkit-border-radius:3px}#SB_e9a667be16 .hcsb_content fieldset{display:block;background-color:#fafafa}#SB_e9a667be16 .hcsb_poweredBy{display:block;position:absolute;top:10px;right:8px;max-width:121px}#SB_e9a667be16 h1.hcsb_topTitle,#SB_e9a667be16 h2.hcsb_topTitle{padding:.3em 0;margin:.4em 0 0;border:0;border-radius:3px;-o-border-radius:3px;-moz-border-radius:3px;-webkit-border-radius:3px}#SB_e9a667be16 .hcsb_citySearchWrapper{position:relative;padding-bottom:1.2em}#SB_e9a667be16 .hcsb_citySearchLabel{padding-bottom:.5em;display:block}#SB_e9a667be16 .hcsb_citySearch{box-sizing:border-box;padding:.75em 5px .75em 5px;width:100%;text-indent:.5em;text-indent:0}#SB_e9a667be16 .hcsb_citySearch.hcsb_hint{color:#999!important}#SB_e9a667be16 .hcsb_guests,#SB_e9a667be16 .hcsb_checkinDay,#SB_e9a667be16 .hcsb_checkinMonth,#SB_e9a667be16 .hcsb_checkoutDay,#SB_e9a667be16 .hcsb_checkoutMonth{padding:5px 2px;font-size:1em;width:auto;margin:.1em .15em 0;padding:0 0 0 2px;*padding:0;-moz-box-sizing:border-box;-webkit-box-sizing:border-box;box-sizing:border-box;border:1px solid #cfd8dc;border-radius:2px;-o-border-radius:2px;-moz-border-radius:2px;-webkit-border-radius:2px;line-height:2.1em;height:2.1em;color:#263238;background:#fff;-moz-box-shadow:none;-webkit-box-shadow:none;box-shadow:none}#SB_e9a667be16 .hcsb_checkinMonth,#SB_e9a667be16 .hcsb_checkoutMonth{-webkit-box-flex:1;-moz-box-flex:1;min-width:20%;-webkit-flex:1;-ms-flex:1;flex:1}#SB_e9a667be16 .hcsb_guests{width:100%;margin:.1em 0}#SB_e9a667be16 .hcsb_guests[disabled]{color:#ccc}#SB_e9a667be16 .hcsb_checkinDateLabel,#SB_e9a667be16 .hcsb_checkoutDateLabel{padding-bottom:.5em;display:block}#SB_e9a667be16 .hcsb_checkinDateContent,#SB_e9a667be16 .hcsb_checkoutDateContent{padding-bottom:1.2em;display:-webkit-box;display:-moz-box;display:-ms-flexbox;display:-webkit-flex;display:flex}#SB_e9a667be16 .hcsb_checkinDateContent img,#SB_e9a667be16 .hcsb_checkoutDateContent img{display:inline-block;background:url(\"//cdn.datahc.com/SearchBox/Image/Dark/hc_icon_calendar_modern.png?\");height:25px;width:25px;vertical-align:top;top:.2em;position:relative;overflow:hidden;cursor:pointer}#SB_e9a667be16 .hcsb_checkinDateContent img:hover,#SB_e9a667be16 .hcsb_checkoutDateContent img:hover{background-position:0 -25px}#SB_e9a667be16 .hcsb_guestsLabel{padding-bottom:.5em;display:block}#SB_e9a667be16 .hcsb_guests{font-size:1em}#SB_e9a667be16 .hcsb_noDatesWrapper{padding:0 .25em 1.3em .25em}#SB_e9a667be16 .hcsb_noDatesWrapper label{cursor:pointer;font-size:.9em;display:inline-block}#SB_e9a667be16 .hcsb_noDate{margin-right:.5em;border:0;background-color:transparent}#EX-SB_e9a667be16{position:absolute;z-index:501;background-color:#fafafa;border-radius:0 0 3px 3px;-o-border-radius:0 0 3px 3px;-moz-border-radius:0 0 3px 3px;-webkit-border-radius:0 0 3px 3px}#EX-SB_e9a667be16 #EX-SB_e9a667be16_inner{background-color:#fafafa;margin:0 10px 10px;padding-top:10px}#SB_e9a667be16 #EX-SB_e9a667be16_inner{border-style:none;background:none;padding:1.5em 0 0;margin:0}#EX-SB_e9a667be16 .hcsb_roomsConfig{background-color:#fafafa;display:block;margin:0 5px 5px 5px;border-radius:3px;-o-border-radius:3px;-moz-border-radius:3px;-webkit-border-radius:3px}#EX-SB_e9a667be16 .hcsb_roomsConfig fieldset{display:block;position:relative;padding:0 .5em;border:0;background-color:#fafafa;border-bottom:1px dotted #eee}#EX-SB_e9a667be16 .hcsb_roomsConfig .hcsb_rcRoomLabel{display:block;padding:.75em 0 .5em}#EX-SB_e9a667be16 .hcsb_roomsConfig .hcsb_rcAdultLabel,#EX-SB_e9a667be16 .hcsb_roomsConfig .hcsb_rcChildrenLabel,#EX-SB_e9a667be16 .hcsb_roomsConfig .hcsb_rcChildrenAgeLabel{font-size:.9em;font-weight:normal;display:inline-block;width:90px}#EX-SB_e9a667be16 .hcsb_rcAdultsWrapper,#EX-SB_e9a667be16 .hcsb_rcChildrenWrapper,#EX-SB_e9a667be16 .hcsb_rcChildrenAgeWrapper{padding:0 0 1em}#EX-SB_e9a667be16 .hcsb_rcChildrenAgeWrapper{display:none}#EX-SB_e9a667be16 .hcsb_rcAdults,#EX-SB_e9a667be16 .hcsb_rcChildren{padding:.4em}#EX-SB_e9a667be16 .hcsb_rcChildrenAgeWrapper input{width:1.6em;margin-right:3px;padding:.3em .2em;text-align:center}#EX-SB_e9a667be16 .hcsb_rcRoomRemove{padding:0 0 1em}#EX-SB_e9a667be16 .hcsb_rcAddRoom{line-height:3em;height:3em;padding-left:.5em}#EX-SB_e9a667be16 .hcsb_rcAddRoom a,#EX-SB_e9a667be16 .hcsb_rcRoomRemove a{color:#777}#EX-SB_e9a667be16 .hcsb_disabled{opacity:.5;-ms-filter:\"alpha(opacity=50)\";filter:alpha(opacity=50);-khtml-opacity:.5;-moz-opacity:.5}#EX-SB_e9a667be16 .hcsb_error{position:relative;width:auto;top:auto;left:auto;margin:4px}#EX-SB_e9a667be16 .hcsb_errorIcon{display:none}#EX-SB_e9a667be16 .hcsb_error em{display:block;padding:.5em}#SB_e9a667be16 .hcsb_fieldError,#EX-SB_e9a667be16 .hcsb_fieldError{border:1px solid #c00!important}#SB_e9a667be16 .hcsb_rtl div,#SB_e9a667be16 .hcsb_rtl p,#SB_e9a667be16 .hcsb_rtl h1,#SB_e9a667be16 .hcsb_rtl h2,#SB_e9a667be16 .hcsb_rtl fieldset,#SB_e9a667be16 .hcsb_rtl select,#SB_e9a667be16 .hcsb_rtl input,#EX-SB_e9a667be16 .hcsb_rtl div,#EX-SB_e9a667be16 .hcsb_rtl p,#EX-SB_e9a667be16 .hcsb_rtl h1,#EX-SB_e9a667be16 .hcsb_rtl h2,#EX-SB_e9a667be16 .hcsb_rtl fieldset,#EX-SB_e9a667be16 .hcsb_rtl select,#EX-SB_e9a667be16 .hcsb_rtl input,#EX-SB_e9a667be16 .hcsb_rtl em{direction:rtl;text-align:right}#SB_e9a667be16 .hcsb_rtl .hcsb_poweredBy{right:auto;left:8px}#SB_e9a667be16 .hcsb_rtl .hcsb_citySearchLabel,#SB_e9a667be16 .hcsb_rtl .hcsb_guestsLabel,#SB_e9a667be16 .hcsb_rtl .hcsb_checkinDateLabel,#SB_e9a667be16 .hcsb_rtl .hcsb_checkoutDateLabel,#EX-SB_e9a667be16 .hcsb_rtl .hcsb_rcRoomLabel,#EX-SB_e9a667be16 .hcsb_rtl .hcsb_rcAdultLabel,#EX-SB_e9a667be16 .hcsb_rtl .hcsb_rcChildrenLabel,#EX-SB_e9a667be16 .hcsb_rtl .hcsb_rcChildrenAgeLabel{direction:rtl;text-align:right}#SB_e9a667be16 .hcsb_rtl .hcsb_noDate{margin:0 0 0 10px}#SB_e9a667be16 .hcsb_rtl .hcsb_checkinMonth,#SB_e9a667be16 .hcsb_rtl .hcsb_checkoutMonth{max-width:118px}#EX-SB_e9a667be16 .hcsb_rtl .hcsb_rcAddRoom{padding:0 .5em 0 0}#EX-SB_e9a667be16 .hcsb_rtl .hcsb_rcRoomRemove{float:left}#EX-SB_e9a667be16 .hcsb_rtl .hcsb_rcChildrenAgeWrapper input{margin:0 0 0 3px}#EX-SB_e9a667be16.hcsb_extend.inline{position:inherit}#EX-SB_e9a667be16.hcsb_extend .hcsb_rcAdults,#EX-SB_e9a667be16.hcsb_extend .hcsb_rcChildren{min-width:4em}#SB_e9a667be16.hcsb_responsive_smallest{width:234px}#SB_e9a667be16.hcsb_responsive_mobile .hcsb_checkinDateWrapper,#SB_e9a667be16.hcsb_responsive_mobile .hcsb_checkoutDateWrapper{width:50%;float:left}#SB_e9a667be16.hcsb_responsive_mobile .hcsb_guestsRoomsWrapper{width:50%;float:right;margin:0 0 1em 0}#SB_e9a667be16.hcsb_responsive_mobile .hcsb_noDatesWrapper{width:47%;float:left;line-height:1em}#SB_e9a667be16.hcsb_responsive_mobile .hcsb_searchButton{clear:both}#SB_e9a667be16.hcsb_responsive_mobile .hcsb_rtl .hcsb_checkinDateWrapper,#SB_e9a667be16.hcsb_responsive_mobile .hcsb_rtl .hcsb_checkoutDateWrapper{float:right}#SB_e9a667be16.hcsb_responsive_mobile .hcsb_rtl .hcsb_guestsRoomsWrapper{float:left}#SB_e9a667be16.hcsb_responsive_mobile .hcsb_rtl .hcsb_noDatesWrapper{float:right}#SB_e9a667be16.hcsb_responsive_tablet .hcsb_checkinDateWrapper,#SB_e9a667be16.hcsb_responsive_tablet .hcsb_checkoutDateWrapper{width:34%;float:left}#SB_e9a667be16.hcsb_responsive_tablet .hcsb_guestsRoomsWrapper{width:32%;float:right;margin-bottom:2.4em}#SB_e9a667be16.hcsb_responsive_tablet .hcsb_noDatesWrapper{position:absolute;bottom:3em}#SB_e9a667be16.hcsb_responsive_tablet .hcsb_searchButton{clear:both}#SB_e9a667be16.hcsb_responsive_tablet .hcsb_rtl .hcsb_checkinDateWrapper,#SB_e9a667be16.hcsb_responsive_tablet .hcsb_rtl .hcsb_checkoutDateWrapper{float:right}#SB_e9a667be16.hcsb_responsive_tablet .hcsb_rtl .hcsb_guestsRoomsWrapper{float:left}#SB_e9a667be16.hcsb_responsive_desktop .hcsb_checkinDateWrapper,#SB_e9a667be16.hcsb_responsive_desktop .hcsb_checkoutDateWrapper{width:22%;float:left}#SB_e9a667be16.hcsb_responsive_desktop .hcsb_guestsRoomsWrapper{width:22%;float:left;margin-bottom:0}#SB_e9a667be16.hcsb_responsive_desktop .hcsb_noDatesWrapper{position:absolute;left:0;bottom:0;padding:0}#SB_e9a667be16.hcsb_responsive_desktop .hcsb_searchButton,#SB_e9a667be16.hcsb_responsive_desktop .hcsb_searchButton:hover{clear:inherit;width:32%;float:right;line-height:.8em;height:.8em;margin:.8em 0 1em;box-sizing:content-box}#SB_e9a667be16.hcsb_responsive_desktop .hcsb_rtl .hcsb_checkinDateWrapper,#SB_e9a667be16.hcsb_responsive_desktop .hcsb_rtl .hcsb_checkoutDateWrapper{float:right}#SB_e9a667be16.hcsb_responsive_desktop .hcsb_rtl .hcsb_guestsRoomsWrapper{float:right}#SB_e9a667be16.hcsb_responsive_desktop .hcsb_rtl .hcsb_noDatesWrapper{right:0}#SB_e9a667be16.hcsb_responsive_desktop .hcsb_rtl .hcsb_searchButton,#SB_e9a667be16.hcsb_responsive_desktop .hcsb_rtl .hcsb_searchButton:hover{float:left})";
+
+            HCSB.buildSB(
+            options,
+            {"Html" : html}, 
+            {"css": css}
+            );   
+        })()
+    
