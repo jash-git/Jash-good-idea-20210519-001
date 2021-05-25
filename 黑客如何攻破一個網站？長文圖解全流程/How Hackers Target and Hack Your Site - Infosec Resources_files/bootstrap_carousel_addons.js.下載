@@ -1,0 +1,9 @@
+//Enables animated heights when switching slides
+jQuery('.carousel.aheight').on('slide.bs.carousel', function (e) {
+	var nextH = jQuery(e.relatedTarget).outerHeight();
+	var speed = jQuery(this).data('aspeed');
+	if(!speed){ speed = 500; }
+	jQuery(this).find('.active.item, .active.carousel-item').parent().animate({
+	   height: nextH
+	}, speed);
+});

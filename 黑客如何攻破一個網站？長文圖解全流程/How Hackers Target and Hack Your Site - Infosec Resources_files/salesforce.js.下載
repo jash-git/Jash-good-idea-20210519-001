@@ -1,0 +1,453 @@
+﻿DIGIOH_API.SALES_CLOUD = {};
+DIGIOH_API.MARKETING_CLOUD = {};
+
+var GetObjectById = function (integration_id, object_type, object_id, options, callback)
+{
+    if (!options) options = {};
+    if (options.console_log === undefined) options.console_log = true;
+    if (options.admin_debug === undefined) options.admin_debug = true;
+    if (options.use_dev === undefined) options.use_dev = false;
+
+    var finalUrl = 'https://jsapi.lightboxcdn.com/sf4w6tnkhbx3urk/v1/salesforce/GetObjectById?user_guid=' + DIGIOH_API.getAccountGuid() + '&integration_id=' + integration_id + '&platform=d&version=v1&format=jsonp&object_type=' + object_type + '&object_id=' + encodeURIComponent(object_id);
+
+    if (options.use_dev)
+    {
+        finalUrl = finalUrl.replace('https://jsapi.lightboxcdn.com', 'https://jsapi-dev.lightboxcdn.com');
+    }
+
+    if (options.admin_debug)
+    {
+        finalUrl += '&admin_debug=on';
+    }
+
+    $.ajax({
+        dataType: 'jsonp',
+        url: finalUrl,
+        success: function (data)
+        {
+            if (data && typeof data === 'object' && data !== null && data.hasOwnProperty('payload') && data.payload)
+            {
+
+                var obj = JSON.parse(data.payload);
+                if (obj.hasOwnProperty('attributes') && obj.attributes)
+                {
+                    if (options.console_log) DIGIOH_API.log('SALES_CLOUD.GetObjectById ==> Success (' + object_type + ', ' + object_id + ')');
+                    if (options.console_log) DIGIOH_API.log(obj);
+
+                    callback(obj);
+                }
+                else
+                {
+                    if (options.console_log) DIGIOH_API.log('SALES_CLOUD.GetObjectById ==> failure_1 (' + object_type + ', ' + object_id + ')');
+                    if (options.console_log) DIGIOH_API.log(data);
+
+                    callback(null);
+                }
+
+            } else
+            {
+                if (options.console_log) DIGIOH_API.log('SALES_CLOUD.GetObjectById ==> failure_2 (' + object_type + ', ' + object_id + ')');
+                if (options.console_log) DIGIOH_API.log(data);
+
+                callback(null);
+            }
+        },
+        error: function (htmltext, textStatus, errorThrown)
+        {
+            if (options.console_log) DIGIOH_API.log('SALES_CLOUD.GetObjectById ==> exception (' + object_type + ', ' + object_id + ')');
+            if (options.console_log) DIGIOH_API.log(textStatus);
+
+            callback(null);
+        }
+    });
+};
+
+
+var SearchObject = function (integration_id, soql_query, options, callback)
+{
+    if (!options) options = {};
+    if (options.console_log === undefined) options.console_log = true;
+    if (options.admin_debug === undefined) options.admin_debug = true;
+    if (options.use_dev === undefined) options.use_dev = false;
+
+    var object_query_encoded = encodeURIComponent(DIGIOH_API.LIGHTBOX.LZString.compressToBase64(soql_query));
+
+    var finalUrl = 'https://jsapi.lightboxcdn.com/sf4w6tnkhbx3urk/v1/salesforce/SearchObjects?user_guid=' + DIGIOH_API.getAccountGuid() + '&integration_id=' + integration_id + '&platform=d&version=v1&format=jsonp&object_query_lz=' + object_query_encoded;
+
+    if (options.use_dev)
+    {
+        finalUrl = finalUrl.replace('https://jsapi.lightboxcdn.com', 'https://jsapi-dev.lightboxcdn.com');
+    }
+
+    if (options.admin_debug)
+    {
+        finalUrl += '&admin_debug=on';
+    }
+
+    $.ajax({
+        dataType: 'jsonp',
+        url: finalUrl,
+        success: function (data)
+        {
+            if (data && typeof data === 'object' && data !== null && data.hasOwnProperty('payload') && data.payload)
+            {
+
+                var objs = JSON.parse(data.payload);
+                if (objs.hasOwnProperty('totalSize') && objs.hasOwnProperty('records'))
+                {
+                    if (options.console_log) DIGIOH_API.log('SALES_CLOUD.SearchObject ==> Success');
+                    if (options.console_log) DIGIOH_API.log(objs);
+
+                    callback(objs);
+                }
+                else
+                {
+                    if (options.console_log) DIGIOH_API.log('SALES_CLOUD.SearchObject ==> failure_1');
+                    if (options.console_log) DIGIOH_API.log(data);
+
+                    callback(null);
+                }
+
+            } else
+            {
+                if (options.console_log) DIGIOH_API.log('SALES_CLOUD.GetObjectById ==> failure_2 (' + object_type + ', ' + object_id + ')');
+                if (options.console_log) DIGIOH_API.log(data);
+
+                callback(null);
+            }
+        },
+        error: function (htmltext, textStatus, errorThrown)
+        {
+            if (options.console_log) DIGIOH_API.log('SALES_CLOUD.GetObjectById ==> exception (' + object_type + ', ' + object_id + ')');
+            if (options.console_log) DIGIOH_API.log(textStatus);
+
+            callback(null);
+        }
+    });
+};
+
+
+var CreateObject = function (integration_id, object_type, new_obj, options, callback)
+{
+    if (!options) options = {};
+    if (options.console_log === undefined) options.console_log = true;
+    if (options.admin_debug === undefined) options.admin_debug = true;
+    if (options.use_dev === undefined) options.use_dev = false;
+
+    var finalUrl = 'https://jsapi.lightboxcdn.com/sf4w6tnkhbx3urk/v1/salesforce/CreateObject?user_guid=' + DIGIOH_API.getAccountGuid() + '&integration_id=' + integration_id + '&platform=d&version=v1&format=jsonp&object_type=' + object_type + '&object_json_lz=' + encodeURIComponent(DIGIOH_API.LIGHTBOX.LZString.compressToBase64(JSON.stringify(new_obj)));
+
+    if (options.use_dev)
+    {
+        finalUrl = finalUrl.replace('https://jsapi.lightboxcdn.com', 'https://jsapi-dev.lightboxcdn.com');
+    }
+
+    if (options.admin_debug)
+    {
+        finalUrl += '&admin_debug=on';
+    }
+
+    $.ajax({
+        dataType: 'jsonp',
+        url: finalUrl,
+        success: function (data)
+        {
+            if (data && typeof data === 'object' && data !== null && data.hasOwnProperty('payload'))
+            {
+                if (options.console_log) DIGIOH_API.log('SALES_CLOUD.CreateObject ==> Success: (' + object_type + ') ' + JSON.stringify(new_obj));
+                if (options.console_log) DIGIOH_API.log(data);
+            } else
+            {
+                if (options.console_log) DIGIOH_API.log('SALES_CLOUD.CreateObject ==> Failure: (' + object_type + ') ' + JSON.stringify(new_obj));
+                if (options.console_log) DIGIOH_API.log(data);
+            }
+
+            callback(data);
+        },
+        error: function (htmltext, textStatus, errorThrown)
+        {
+            if (options.console_log) DIGIOH_API.log('SALES_CLOUD.CreateObject ==> Exception: (' + object_type + ') ' + JSON.stringify(new_obj));
+            if (options.console_log) DIGIOH_API.log(textStatus);
+
+            callback(null);
+        }
+    });
+};
+
+
+var UpdateObject = function (integration_id, object_type, object_id, update_obj, options, callback)
+{
+    if (!options) options = {};
+    if (options.console_log === undefined) options.console_log = true;
+    if (options.admin_debug === undefined) options.admin_debug = true;
+    if (options.use_dev === undefined) options.use_dev = false;
+
+    var finalUrl = 'https://jsapi.lightboxcdn.com/sf4w6tnkhbx3urk/v1/salesforce/UpdateObject?user_guid=' + DIGIOH_API.getAccountGuid() + '&integration_id=' + integration_id + '&platform=d&version=v1&format=jsonp&object_type=' + object_type + '&object_id=' + encodeURIComponent(object_id) + '&object_json_lz=' + encodeURIComponent(DIGIOH_API.LIGHTBOX.LZString.compressToBase64(JSON.stringify(update_obj)));
+
+    if (options.use_dev)
+    {
+        finalUrl = finalUrl.replace('https://jsapi.lightboxcdn.com', 'https://jsapi-dev.lightboxcdn.com');
+    }
+
+    if (options.admin_debug)
+    {
+        finalUrl += '&admin_debug=on';
+    }
+
+    $.ajax({
+        dataType: 'jsonp',
+        url: finalUrl,
+        success: function (data)
+        {
+            if (data && typeof data === 'object' && data !== null && data.hasOwnProperty('payload'))
+            {
+                if (options.console_log) DIGIOH_API.log('SALES_CLOUD.UpdateObject ==> Success: (' + object_type + ', ' + object_id + ') ' + JSON.stringify(update_obj));
+                if (options.console_log) DIGIOH_API.log(data);
+            } else
+            {
+                if (options.console_log) DIGIOH_API.log('SALES_CLOUD.UpdateObject ==> Failure: (' + object_type + ', ' + object_id + ') ' + JSON.stringify(update_obj));
+                if (options.console_log) DIGIOH_API.log(data);
+            }
+
+            callback(data);
+        },
+        error: function (htmltext, textStatus, errorThrown)
+        {
+            if (options.console_log) DIGIOH_API.log('SALES_CLOUD.UpdateObject ==> Exception: (' + object_type + ', ' + object_id + ') ' + JSON.stringify(update_obj));
+            if (options.console_log) DIGIOH_API.log(textStatus);
+
+            callback(null);
+        }
+    });
+};
+
+
+var Leandata = function (integration_id, query_obj, options, callback)
+{
+    if (!options) options = {};
+    if (options.console_log === undefined) options.console_log = true;
+    if (options.admin_debug === undefined) options.admin_debug = true;
+    if (options.use_dev === undefined) options.use_dev = false;
+
+    var finalUrl = 'https://jsapi.lightboxcdn.com/sf4w6tnkhbx3urk/v1/salesforce/Leandata?user_guid=' + DIGIOH_API.getAccountGuid() + '&integration_id=' + integration_id + '&platform=d&version=v1&format=jsonp&object_query_lz=' + encodeURIComponent(DIGIOH_API.LIGHTBOX.LZString.compressToBase64(JSON.stringify(query_obj)));
+
+    if (options.use_dev)
+    {
+        finalUrl = finalUrl.replace('https://jsapi.lightboxcdn.com', 'https://jsapi-dev.lightboxcdn.com');
+    }
+
+    if (options.admin_debug)
+    {
+        finalUrl += '&admin_debug=on';
+    }
+
+    $.ajax({
+        dataType: 'jsonp',
+        url: finalUrl,
+        success: function (data)
+        {
+            if (data && typeof data === 'object' && data !== null && data.hasOwnProperty('payload'))
+            {
+                if (options.console_log) DIGIOH_API.log('SALES_CLOUD.Leandata ==> Success: ' + JSON.stringify(query_obj));
+                if (options.console_log) DIGIOH_API.log(data);
+            } else
+            {
+                if (options.console_log) DIGIOH_API.log('SALES_CLOUD.Leandata ==> Failure: ' + JSON.stringify(query_obj));
+                if (options.console_log) DIGIOH_API.log(data);
+            }
+
+            callback(data);
+        },
+        error: function (htmltext, textStatus, errorThrown)
+        {
+            if (options.console_log) DIGIOH_API.log('SALES_CLOUD.Leandata ==> Exception: (' + object_type + ') ' + JSON.stringify(query_obj));
+            if (options.console_log) DIGIOH_API.log(textStatus);
+
+            callback(null);
+        }
+    });
+};
+
+
+var GetDataExtensionRow = function (integration_id, de_external_key, field_name, field_value, options, callback)
+{
+    if (!options) options = {};
+    if (options.console_log === undefined) options.console_log = true;
+    if (options.admin_debug === undefined) options.admin_debug = true;
+    if (options.use_dev === undefined) options.use_dev = false;
+
+    var finalUrl = 'https://jsapi.lightboxcdn.com/sfmc8ank6fxt7fk26c/v1/sfmc/DataExtensionRead?user_guid=' + DIGIOH_API.getAccountGuid() + '&integration_id=' + integration_id + '&platform=d&format=jsonp&de_external_key=' + de_external_key + '&field_name=' + field_name + '&field_value=' + field_value;
+
+    if (options.use_dev)
+    {
+        finalUrl = finalUrl.replace('https://jsapi.lightboxcdn.com', 'https://jsapi-dev.lightboxcdn.com');
+    }
+
+    if (options.admin_debug)
+    {
+        finalUrl += '&admin_debug=on';
+    }
+
+    $.ajax({
+        dataType: 'jsonp',
+        url: finalUrl,
+        success: function (data)
+        {
+            if (data && typeof data === 'object' && data !== null && data.hasOwnProperty('success') && data.success)
+            {
+                if (data.hasOwnProperty('payload'))
+                {
+                    if (options.console_log) DIGIOH_API.log('MARKETING_CLOUD.GetDataExtensionRow ==>');
+                    if (options.console_log) DIGIOH_API.log(data);
+
+                    var payload = JSON.parse(data.payload);
+                    if (payload.count > 0 && payload.items.length > 0)
+                    {
+                        if (options.console_log) DIGIOH_API.log('MARKETING_CLOUD.GetDataExtensionRow: Success (' + field_name + ', ' + field_value + ')');
+                        callback(data);
+                    } else
+                    {
+                        if (options.console_log) DIGIOH_API.log('MARKETING_CLOUD.GetDataExtensionRow: Not Found (' + field_name + ', ' + field_value + ')');
+                        callback(null);
+                    }
+                } else
+                {
+                    if (options.console_log) DIGIOH_API.log('MARKETING_CLOUD.GetDataExtensionRow: Invalid Payload (' + field_name + ', ' + field_value + ')');
+                    if (options.console_log) DIGIOH_API.log(data);
+                    callback(null);
+                }
+            } else
+            {
+                if (options.console_log) DIGIOH_API.log('MARKETING_CLOUD.GetDataExtensionRow: Failure (' + field_name + ', ' + field_value + ')');
+                if (options.console_log) DIGIOH_API.log(data);
+                callback(null);
+            }
+        },
+        error: function (htmltext, textStatus, errorThrown)
+        {
+            if (options.console_log) DIGIOH_API.log('MARKETING_CLOUD.GetDataExtensionRow: Exception (' + field_name + ', ' + field_value + ')');
+            if (options.console_log) DIGIOH_API.log(textStatus);
+            callback(null);
+        }
+    });
+};
+
+
+var UpsertDataExtensionRow = function (integration_id, de_external_key, field_name, field_value, payload, options, callback)
+{
+    if (!options) options = {};
+    if (options.console_log === undefined) options.console_log = true;
+    if (options.admin_debug === undefined) options.admin_debug = true;
+    if (options.use_dev === undefined) options.use_dev = false;
+
+    var payload_json_lz = DIGIOH_API.LIGHTBOX.LZString.compressToBase64(JSON.stringify(payload));
+
+    var finalUrl = 'https://jsapi.lightboxcdn.com/sfmc8ank6fxt7fk26c/v1/sfmc/DataExtensionWrite?user_guid=' + DIGIOH_API.getAccountGuid() + '&integration_id=' + integration_id + '&platform=d&format=jsonp&de_external_key=' + de_external_key + '&field_name=' + field_name + '&field_value=' + field_value + '&payload_json_lz=' + payload_json_lz;
+
+    if (options.use_dev)
+    {
+        finalUrl = finalUrl.replace('https://jsapi.lightboxcdn.com', 'https://jsapi-dev.lightboxcdn.com');
+    }
+
+    if (options.admin_debug)
+    {
+        finalUrl += '&admin_debug=on';
+    }
+
+    $.ajax({
+        dataType: 'jsonp',
+        url: finalUrl,
+        success: function (data)
+        {
+            if (data && typeof data === 'object' && data !== null && data.hasOwnProperty('success') && data.success)
+            {
+                if (data.hasOwnProperty('payload'))
+                {
+                    if (options.console_log) DIGIOH_API.log('MARKETING_CLOUD.UpsertDataExtensionRow: Success (' + field_name + ', ' + field_value + ')');
+                    if (options.console_log) DIGIOH_API.log(data);
+                } else
+                {
+                    if (options.console_log) DIGIOH_API.log('MARKETING_CLOUD.UpsertDataExtensionRow: Invalid Payload (' + field_name + ', ' + field_value + ')');
+                    if (options.console_log) DIGIOH_API.log(data);
+                }
+            } else
+            {
+                if (options.console_log) DIGIOH_API.log('MARKETING_CLOUD.UpsertDataExtensionRow: Failure (' + field_name + ', ' + field_value + ')');
+                if (options.console_log) DIGIOH_API.log(data);
+            }
+
+            callback(data);
+        },
+        error: function (htmltext, textStatus, errorThrown)
+        {
+            if (options.console_log) DIGIOH_API.log('MARKETING_CLOUD.UpsertDataExtensionRow: Exception (' + field_name + ', ' + field_value + ')');
+            if (options.console_log) DIGIOH_API.log(textStatus);
+            callback(null);
+        }
+    });
+};
+
+
+var TriggerJourney = function (integration_id, payload, options, callback)
+{
+    if (!options) options = {};
+    if (options.console_log === undefined) options.console_log = true;
+    if (options.admin_debug === undefined) options.admin_debug = true;
+    if (options.use_dev === undefined) options.use_dev = false;
+
+    var payload_json_lz = DIGIOH_API.LIGHTBOX.LZString.compressToBase64(JSON.stringify(payload));
+
+    var finalUrl = 'https://jsapi.lightboxcdn.com/sfmc8ank6fxt7fk26c/v1/sfmc/TriggerJourney?user_guid=' + DIGIOH_API.getAccountGuid() + '&integration_id=' + integration_id + '&platform=d&format=jsonp&payload_json_lz=' + payload_json_lz;
+
+    if (options.use_dev)
+    {
+        finalUrl = finalUrl.replace('https://jsapi.lightboxcdn.com', 'https://jsapi-dev.lightboxcdn.com');
+    }
+
+    if (options.admin_debug)
+    {
+        finalUrl += '&admin_debug=on';
+    }
+
+    $.ajax({
+        dataType: 'jsonp',
+        url: finalUrl,
+        success: function (data)
+        {
+            if (data && typeof data === 'object' && data !== null && data.hasOwnProperty('success') && data.success)
+            {
+                if (data.hasOwnProperty('payload'))
+                {
+                    if (options.console_log) DIGIOH_API.log('MARKETING_CLOUD.TriggerJourney: Success');
+                    if (options.console_log) DIGIOH_API.log(data);
+                } else
+                {
+                    if (options.console_log) DIGIOH_API.log('MARKETING_CLOUD.TriggerJourney: Invalid Payload');
+                    if (options.console_log) DIGIOH_API.log(data);
+                }
+            } else
+            {
+                if (options.console_log) DIGIOH_API.log('MARKETING_CLOUD.TriggerJourney: Failure');
+                if (options.console_log) DIGIOH_API.log(data);
+            }
+
+            callback(data);
+        },
+        error: function (htmltext, textStatus, errorThrown)
+        {
+            if (options.console_log) DIGIOH_API.log('MARKETING_CLOUD.TriggerJourney: Exception');
+            if (options.console_log) DIGIOH_API.log(textStatus);
+            callback(null);
+        }
+    });
+};
+
+
+DIGIOH_API.SALES_CLOUD.GetObjectById = GetObjectById;
+DIGIOH_API.SALES_CLOUD.SearchObject = SearchObject;
+DIGIOH_API.SALES_CLOUD.CreateObject = CreateObject;
+DIGIOH_API.SALES_CLOUD.UpdateObject = UpdateObject;
+DIGIOH_API.SALES_CLOUD.Leandata = Leandata;
+
+DIGIOH_API.MARKETING_CLOUD.GetDataExtensionRow = GetDataExtensionRow;
+DIGIOH_API.MARKETING_CLOUD.UpsertDataExtensionRow = UpsertDataExtensionRow;
+DIGIOH_API.MARKETING_CLOUD.TriggerJourney = TriggerJourney;

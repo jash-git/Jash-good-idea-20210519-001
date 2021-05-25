@@ -1,0 +1,297 @@
+function getCookieValue(cname) {
+	var name = cname + "=";
+	var decodedCookie = decodeURIComponent(document.cookie);
+	var ca = decodedCookie.split(";");
+	for (var i = 0; i < ca.length; i++) {
+		var c = ca[i];
+		while (c.charAt(0) == " ") {
+			c = c.substring(1);
+		}
+		if (c.indexOf(name) == 0) {
+			return c.substring(name.length, c.length);
+		}
+	}
+	return false;
+}
+
+jQuery(document).ready(function () {
+	function loadTealiumLib() {
+		$.getScript("//tags.tiqcdn.com/utag/infosec/main/prod/utag.js")
+			.done(function (script, textStatus) {
+				// console.log("Script loaded!");
+			})
+			.fail(function (jqxhr, settings, exception) {
+				console.log("Tealium script failed to load.");
+			});
+	}
+
+	getUserInfo();
+
+	function getUserInfo() {
+		var ip_address;
+		var cdata = getCookieValue("user_info");
+		if (typeof utag_data === "undefined") {
+			utag_data = {};
+		}
+
+		if (cdata) {
+			// Loading from cookie
+			// console.log("Fetching data from existing cookie");
+			var data = JSON.parse(cdata);
+
+			utag_data["6sense_company_name"] = data.company.name;
+			utag_data["6sense_company_streetAddress"] = data.company.streetAddress;
+			utag_data["6sense_company_city"] = data.company.city;
+			utag_data["6sense_company_state"] = data.company.state;
+			utag_data["6sense_company_postalCode"] = data.company.postalCode;
+			utag_data["6sense_company_companyPhone"] = data.company.companyPhone;
+			utag_data["6sense_company_country"] = data.company.country;
+			utag_data["6sense_company_region"] = data.company.region;
+			utag_data["6sense_company_website"] = data.company.domain;
+			utag_data["6sense_company_industry"] = data.company.industry;
+			utag_data["6sense_company_sicdescription"] = data.company.sicdescription;
+			utag_data["6sense_company_siccode"] = data.company.siccode;
+			utag_data["6sense_company_naicscode"] = data.company.naicscode;
+			utag_data["6sense_company_naicsdescription"] =
+				data.company.naicsdescription;
+			utag_data["6sense_company_size"] = data.company.employeeRange;
+			utag_data["6sense_company_size_count"] = data.company.employeeCount;
+			utag_data["6sense_company_revenueRange"] = data.company.revenueRange;
+			utag_data["6sense_company_annualRevenue"] = data.company.annualRevenue;
+
+			utag_data["geoCity"] = data.geoCity;
+			utag_data["geoCountryCode"] = data.geoCountryCode;
+			utag_data["geoCountryName"] = data.geoCountryName;
+			utag_data["geoLatitude"] = data.geoLatitude;
+			utag_data["geoLongitude"] = data.geoLongitude;
+			utag_data["geoRegionCode"] = data.geoRegionCode;
+			utag_data["geoRegionName"] = data.geoRegionName;
+			utag_data["geoZipcode"] = data.geoZipcode;
+
+			if (typeof google_tag_params !== "undefined") {
+				utag_data["deviceType"] = google_tag_params["deviceType"];
+				utag_data["deviceModel"] = google_tag_params["deviceModel"];
+				utag_data["deviceManufacturer"] =
+					google_tag_params["deviceManufacturer"];
+				utag_data["osName"] = google_tag_params["osName"];
+				utag_data["osVersion"] = google_tag_params["osVersion"];
+			}
+
+			let printedPardotCRMID = "sean.voigts@infosecinstitute.com";
+			utag_data.pardotCRMID = printedPardotCRMID;
+			if (utag_data["tealium_event"] == "") {
+				utag_data["tealium_event"] = "page_view";
+			}
+
+			(function (i, s, o, g, r, a, m) {
+				i["GoogleAnalyticsObject"] = r;
+				(i[r] =
+					i[r] ||
+					function () {
+						(i[r].q = i[r].q || []).push(arguments);
+					}),
+					(i[r].l = 1 * new Date());
+				(a = s.createElement(o)), (m = s.getElementsByTagName(o)[0]);
+				a.async = 1;
+				a.src = g;
+				m.parentNode.insertBefore(a, m);
+			})(
+				window,
+				document,
+				"script",
+				"//www.google-analytics.com/analytics.js",
+				"ga"
+			);
+
+			ga("create", "UA-146509-8", "auto");
+			ga("set", "dimension1", data.company.employeeRange);
+			ga("set", "dimension2", data.company.industry);
+			ga("send", "pageview");
+
+			loadTealiumLib();
+		} else {
+			// Fetching data for cookie
+
+			let GeoIPRecord = false;
+			// console.log("Fetching data for cookie");
+
+			geoip_detect
+				.get_info()
+				.then(function (record) {
+					GeoIPRecord = record;
+					if (record.error()) {
+						console.error("WARNING Geodata Error:" + record.error());
+						$(".geo-error").text(record.error());
+					} else {
+						ip_address = record.get("traits.ip_address");
+					}
+				})
+				.then(function (e) {
+					// Debug: Show raw data of record. (Warning: No property in this object is guaranteed to exist.)
+
+					var url = "https://epsilon.6sense.com/v2/company/details";
+					var token = "1e405aa190170159c1c014252c03d24c31107e4a";
+
+					jQuery.ajax({
+						type: "GET",
+						url: url,
+						datatype: "json",
+						beforeSend: function (xhr) {
+							xhr.setRequestHeader("Authorization", "Token " + token);
+							xhr.setRequestHeader("X-Forwarded-For", ip_address);
+						},
+						success: function (data) {
+							data.geoCity = GeoIPRecord.get("city.names.en");
+							data.geoCountryCode = GeoIPRecord.get("country.iso_code");
+							data.geoCountryName = GeoIPRecord.get("country.names.en");
+							data.geoLatitude = GeoIPRecord.get("location.latitude");
+							data.geoLongitude = GeoIPRecord.get("location.longitude");
+							data.geoRegionCode = GeoIPRecord.get("location.metro_code");
+							data.geoRegionName = GeoIPRecord.get(
+								"most_specific_subdivision.names.en"
+							);
+							data.geoZipcode = GeoIPRecord.get("postal.code");
+
+							var data_serialized = JSON.stringify(data);
+
+							document.cookie =
+								"user_info=" +
+								data_serialized +
+								";expires=;domain:infosecinstitute.com";
+
+							utag_data["6sense_company_name"] = data.company.name;
+							utag_data["6sense_company_streetAddress"] =
+								data.company.streetAddress;
+							utag_data["6sense_company_city"] = data.company.city;
+							utag_data["6sense_company_state"] = data.company.state;
+							utag_data["6sense_company_postalCode"] = data.company.postalCode;
+							utag_data["6sense_company_companyPhone"] =
+								data.company.companyPhone;
+							utag_data["6sense_company_country"] = data.company.country;
+							utag_data["6sense_company_region"] = data.company.region;
+							utag_data["6sense_company_website"] = data.company.domain;
+							utag_data["6sense_company_industry"] = data.company.industry;
+							utag_data["6sense_company_sicdescription"] =
+								data.company.sicdescription;
+							utag_data["6sense_company_siccode"] = data.company.siccode;
+							utag_data["6sense_company_naicscode"] = data.company.naicscode;
+							utag_data["6sense_company_naicsdescription"] =
+								data.company.naicsdescription;
+							utag_data["6sense_company_size"] = data.company.employeeRange;
+							utag_data["6sense_company_size_count"] =
+								data.company.employeeCount;
+							utag_data["6sense_company_revenueRange"] =
+								data.company.revenueRange;
+							utag_data["6sense_company_annualRevenue"] =
+								data.company.annualRevenue;
+
+							// utag_data["geoCity"] = record.data.city.names.en;
+							utag_data["geoCity"] = data.geoCity;
+							utag_data["geoCountryCode"] = data.geoCountryCode;
+							utag_data["geoCountryName"] = data.geoCountryName;
+							utag_data["geoLatitude"] = data.geoLatitude;
+							utag_data["geoLongitude"] = data.geoLongitude;
+							utag_data["geoRegionCode"] = data.geoRegionCode;
+							utag_data["geoRegionName"] = data.geoRegionName;
+							utag_data["geoZipcode"] = data.geoZipcode;
+
+							let printedPardotCRMID = "sean.voigts@infosecinstitute.com";
+							utag_data.pardotCRMID = printedPardotCRMID;
+
+							if (utag_data["tealium_event"] == "") {
+								utag_data["tealium_event"] = "page_view";
+							}
+							// console.log("UTAG_DATA:", utag_data);
+
+							(function (i, s, o, g, r, a, m) {
+								i["GoogleAnalyticsObject"] = r;
+								(i[r] =
+									i[r] ||
+									function () {
+										(i[r].q = i[r].q || []).push(arguments);
+									}),
+									(i[r].l = 1 * new Date());
+								(a = s.createElement(o)), (m = s.getElementsByTagName(o)[0]);
+								a.async = 1;
+								a.src = g;
+								m.parentNode.insertBefore(a, m);
+							})(
+								window,
+								document,
+								"script",
+								"//www.google-analytics.com/analytics.js",
+								"ga"
+							);
+
+							ga("create", "UA-146509-8", "auto");
+							ga("set", "dimension1", data.company.employeeRange);
+							ga("set", "dimension2", data.company.industry);
+							ga("send", "pageview");
+						},
+						failure: function () {
+							console.log("6sense request failed");
+						},
+					});
+				})
+				.then(function (e) {
+					try {
+						// Load utag.js
+						loadTealiumLib();
+					} catch (e) {
+						console.log("Error loading utag.js:", e.toString());
+					}
+				})
+				.catch((e) => {
+					console.log("Error getting customer data", e.toString());
+				});
+		}
+	}
+
+	// Capture email signups
+	jQuery("#gform_2").on("submit", function (e) {
+		try {
+			var user_email = $(".ginput_container_email input").val();
+			utag.link({
+				email_signup: user_email,
+			});
+		} catch (e) {
+			console.log("Error obtaining user email from signup.", e.toString());
+		}
+	});
+
+	document.addEventListener("om.Optin.init.submit", function (event) {
+		// Grab the email address submitted by the user.
+		const email = event.detail.Optin.data.fields.email;
+		console.log("Email captured: ", email);
+		utag.link({
+			email_signup: email,
+		});
+	});
+
+	if (utag_data["foo"] == "bar") {
+		console.log("Sending AJAX request.");
+
+		var mydata = {
+			bar: "baz",
+			baz: "bar",
+			action: "backup_form_data",
+			security: ajaxNonce,
+		};
+
+		var request = jQuery.ajax({
+			type: "POST",
+			url: ajaxURL,
+			action: "backup_form_data",
+			dataType: "json",
+			data: mydata,
+		});
+
+		request.done(function (data) {
+			console.log("Data returned: ", data);
+		});
+
+		request.fail(function (jqXHR, textStatus) {
+			console.log("Request failed: " + textStatus, jqXHR);
+		});
+	}
+});

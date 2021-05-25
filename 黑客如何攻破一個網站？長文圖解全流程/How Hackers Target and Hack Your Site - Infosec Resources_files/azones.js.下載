@@ -1,0 +1,126 @@
+jQuery(function($){
+
+	var containers = '.azone-container';
+	
+	init();
+
+	function init(){
+		//console.log('azones initiated');
+		pk_load_zones();
+		pk_setup_ad_click_tracking();
+	}
+		
+	function pk_load_zones(){
+		let data = { 
+			'action': 'pk_handle_ads',
+			'page_link' : window.location.pathname, //for gravity form actions
+			'zones': [],
+		};
+
+		//Get article main term
+		let term = $('#article-main-term');
+		if(term.length > 0){
+			data.term = term.data('term');
+		}
+
+		//Get article tags
+		let tags = $('#article-tags');
+		if(tags.length > 0){
+			data.tags = tags.data('tags');
+		}
+
+		//Get article ID
+		let article_id = $('#article-id');
+		if(article_id.length > 0){
+			data.article_id = article_id.data('id');
+		}
+
+		//Get all adzones on article page
+		$(containers).each(function(){
+
+			//Check if previous item is an azone container - maybe don't show?
+			let prev = $(this).prev().attr('class');
+			if(prev == 'azone-container'){  }
+
+			let zone = $(this).data('zone');
+			if(zone.length > 0){ 
+				data.zones.push(zone);
+			}
+		});
+
+		//adzoneajaxobj.adzoneajaxurl //custom ajax script
+		//ajaxobj.ajaxurl //admin ajax
+		$.post(adzoneajaxobj.adzoneajaxurl, data, function(response) {
+				//alert('Got this from the server: ' + response);
+		})
+		.done(function(response) {
+			//console.log('done: '+response);
+			pk_populate_adzones(containers,JSON.parse(response));
+		})
+		.fail(function() {
+			//console.log('fail');
+		})
+		.always(function(response) {
+			//console.log(response);
+		});
+	}
+
+	//Parse through the containers again and output the returned data
+	function pk_populate_adzones(containers,data){ 
+
+		var top_run = false;
+
+		$(containers).each(function(i){
+			let $this_container = $(this);
+			let z = $this_container.data('zone');
+
+			if(typeof data[i] !== 'undefined' && data[i].zone == z){ //Same index and same zone - add the markup
+				$this_container.html(data[i].markup);
+			}
+		});
+	}
+
+	function pk_setup_ad_click_tracking(){
+		let $ads = $(containers).find('.pkverts');
+
+		$(document).on('click', '.pkverts a', function (e) {
+			//e.preventDefault();
+			let $this = $(this);
+			let link = $this.attr("href");
+			let ad_id = $this.closest('.pkverts').data('adid');
+			let target = $this.attr("target");
+			if(!target){ target="_blank"; }
+
+			let data = { 
+				'action': 'pk_handle_ads',
+				'ad_click': ad_id,
+				'page_link' : link,
+			};
+
+			//Ajax a click for this ad
+			$.post(adzoneajaxobj.adzoneajaxurl, data, function(response) {
+				//alert('Got this from the server: ' + response);
+			})
+			.done(function(response) {
+				//console.log('done: '+response);
+			})
+			.fail(function() {
+				//console.log('fail');
+			})
+			.always(function(response) {
+				//Continue on to the actual link
+				//window.location = link;
+
+				/*window.open(
+				  link,
+				  target
+				);*/
+
+			});
+
+		});
+
+	}
+
+
+});
