@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<!-- saved from url=(0055)https://blog.simplypatrick.com/posts/2018/03-10-catch2/ -->
+<html prefix="og: http://ogp.me/ns#" style=""><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>C++ 單元測試: 使用 Catch2</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  
+
+  <meta property="og:site_name" content="Simply Patrick">
+  <meta property="og:url" content="https://blog.simplypatrick.com/posts/2018/03-10-catch2/">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="https://lh3.googleusercontent.com/-GqbL2_hPq9Y/UC9brHyHa1I/AAAAAAAAEoY/rGGtCNWe3Vw/s800/patrick.jpg">
+
+    <link href="./03_files/bootstrap.min.css" rel="stylesheet">
+  <link href="./03_files/bootstrap-toc.css" rel="stylesheet">
+  <link href="./03_files/font-awesome.css" rel="stylesheet">
+
+  <link href="./03_files/css" rel="stylesheet" type="text/css">
+  <link href="./03_files/css(1)" rel="stylesheet" type="text/css">
+  <link href="./03_files/css(2)" rel="stylesheet" type="text/css">
+  <link href="./03_files/css(3)" rel="stylesheet" type="text/css">
+
+  <link href="./03_files/prism.css" rel="stylesheet">
+  <link href="./03_files/blog.css" rel="stylesheet">
+
+  <link href="https://blog.simplypatrick.com/images/favicon.ico" rel="shortcut icon" type="image/x-icon">
+
+
+  <meta property="og:site_name" content="Simply Patrick">
+  <meta property="og:url" content="https://blog.simplypatrick.com/posts/2018/03-10-catch2/">
+  <meta property="og:title" content="C++ 單元測試: 使用 Catch2">
+  <meta property="og:type" content="article">
+  <meta property="og:article:published_time" content="2018-03-10 00:00:00 +0000 UTC">
+  
+  <meta property="og:article:tag" content="c++">
+  
+  <meta property="og:article:author" content="Patrick Tsai">
+<script async="" src="./03_files/analytics.js.下載"></script><script src="./03_files/embed.js.下載" data-timestamp="1620699826343"></script><link rel="prefetch" as="style" href="https://c.disquscdn.com/next/embed/styles/lounge.305cef62f65d619287ed5bfd8a11158b.css"><link rel="prefetch" as="script" href="https://c.disquscdn.com/next/embed/common.bundle.f485ba8b89bf2153fdb9f493ec342aed.js"><link rel="prefetch" as="script" href="https://c.disquscdn.com/next/embed/lounge.bundle.daad0ef0a39804d0796d79f216ca4d2e.js"><link rel="prefetch" as="script" href="https://disqus.com/next/config.js"><script async="" id="dsq_recs_scr" src="./03_files/recommendations.js.下載"></script><link rel="prefetch" as="style" href="https://c.disquscdn.com/next/recommendations/styles/recommendations.eff219b98b7c4167b4b289065f36f391.css"><link rel="prefetch" as="script" href="https://c.disquscdn.com/next/recommendations/common.bundle.9aad4e5af3027dd4fbeac9669fb17819.js"><link rel="prefetch" as="script" href="https://c.disquscdn.com/next/recommendations/recommendations.bundle.4214219f8f12995fa46e1e83745b2a0e.js"><link rel="prefetch" as="script" href="https://disqus.com/next/config.js"></head>
+<body data-spy="scroll" data-target="#toc" style="">
+    <div class="container" id="main">
+    <div class="row">
+      <header role="banner">
+  <div class="row">
+    <div class="col-md-9">
+      <h1 class="banner-title">
+        <a href="https://blog.simplypatrick.com/">Simply Patrick</a>
+        <small class="banner-subtitle">Hopes can always go up, tears can only come down.</small>
+      </h1>
+    </div>
+    <div class="col-md-3 text-right">
+      <ul class="social-links list-inline">
+        <li><a href="https://twitter.com/PatrickSimply"><i class="fa fa-twitter"></i></a></li>
+        <li><a href="https://www.facebook.com/yinghau76"><i class="fa fa-facebook"></i></a></li>
+        <li><a href="https://www.linkedin.com/in/yinghau76"><i class="fa fa-linkedin"></i></a></li>
+        <li><a href="https://github.com/p47t"><i class="fa fa-github-alt"></i></a></li>
+      </ul>
+    </div>
+  <div>
+</div></div></header>
+
+      <nav class="navbar navbar-default" role="navigation">
+  <div class="container-fluid">
+    
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="https://blog.simplypatrick.com/posts/">posts</a>
+      <a class="navbar-brand" href="https://blog.simplypatrick.com/tils/">TILs</a>
+    </div>
+
+    
+    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+      <ul class="nav navbar-nav">
+        <li class="dropdown">
+          <a href="https://blog.simplypatrick.com/posts/2018/03-10-catch2/#" class="dropdown-toggle" data-toggle="dropdown">categories <b class="caret"></b></a>
+          <ul class="dropdown-menu">
+          
+            <li><a href="https://blog.simplypatrick.com/categories/blog">blog <span class="badge">3</span></a></li>
+          
+            <li><a href="https://blog.simplypatrick.com/categories/business">business <span class="badge">26</span></a></li>
+          
+            <li><a href="https://blog.simplypatrick.com/categories/career">career <span class="badge">20</span></a></li>
+          
+            <li><a href="https://blog.simplypatrick.com/categories/development">development <span class="badge">52</span></a></li>
+          
+            <li><a href="https://blog.simplypatrick.com/categories/game">game <span class="badge">3</span></a></li>
+          
+            <li><a href="https://blog.simplypatrick.com/categories/programming">programming <span class="badge">184</span></a></li>
+          
+            <li><a href="https://blog.simplypatrick.com/categories/web">web <span class="badge">10</span></a></li>
+          
+          </ul>
+        </li>
+        <li class="dropdown">
+          <a href="https://blog.simplypatrick.com/posts/2018/03-10-catch2/#" class="dropdown-toggle" data-toggle="dropdown">tags <b class="caret"></b></a>
+          <ul class="dropdown-menu">
+          
+            <li><a href="https://blog.simplypatrick.com/tags/agile">agile <span class="badge">4</span></a></li>
+          
+            <li><a href="https://blog.simplypatrick.com/tags/android">android <span class="badge">12</span></a></li>
+          
+            <li><a href="https://blog.simplypatrick.com/tags/book">book <span class="badge">25</span></a></li>
+          
+            <li><a href="https://blog.simplypatrick.com/tags/build">build <span class="badge">3</span></a></li>
+          
+            <li><a href="https://blog.simplypatrick.com/tags/c++">c++ <span class="badge">3</span></a></li>
+          
+            <li><a href="https://blog.simplypatrick.com/tags/cloud">cloud <span class="badge">1</span></a></li>
+          
+            <li><a href="https://blog.simplypatrick.com/tags/crack">crack <span class="badge">2</span></a></li>
+          
+            <li><a href="https://blog.simplypatrick.com/tags/cxx">cxx <span class="badge">5</span></a></li>
+          
+            <li><a href="https://blog.simplypatrick.com/tags/dotnet">dotnet <span class="badge">42</span></a></li>
+          
+            <li><a href="https://blog.simplypatrick.com/tags/embedded">embedded <span class="badge">5</span></a></li>
+          
+            <li><a href="https://blog.simplypatrick.com/tags/engineer">engineer <span class="badge">2</span></a></li>
+          
+            <li><a href="https://blog.simplypatrick.com/tags/font">font <span class="badge">3</span></a></li>
+          
+            <li><a href="https://blog.simplypatrick.com/tags/fuchsia">fuchsia <span class="badge">2</span></a></li>
+          
+            <li><a href="https://blog.simplypatrick.com/tags/game">game <span class="badge">2</span></a></li>
+          
+            <li><a href="https://blog.simplypatrick.com/tags/git">git <span class="badge">4</span></a></li>
+          
+            <li><a href="https://blog.simplypatrick.com/tags/go">go <span class="badge">5</span></a></li>
+          
+            <li><a href="https://blog.simplypatrick.com/tags/google">google <span class="badge">5</span></a></li>
+          
+            <li><a href="https://blog.simplypatrick.com/tags/ios">ios <span class="badge">5</span></a></li>
+          
+            <li><a href="https://blog.simplypatrick.com/tags/java">java <span class="badge">9</span></a></li>
+          
+            <li><a href="https://blog.simplypatrick.com/tags/jupyter">jupyter <span class="badge">1</span></a></li>
+          
+            <li><a href="https://blog.simplypatrick.com/tags/kotlin">kotlin <span class="badge">2</span></a></li>
+          
+            <li><a href="https://blog.simplypatrick.com/tags/kuso">kuso <span class="badge">3</span></a></li>
+          
+            <li><a href="https://blog.simplypatrick.com/tags/management">management <span class="badge">3</span></a></li>
+          
+            <li><a href="https://blog.simplypatrick.com/tags/microsoft">microsoft <span class="badge">14</span></a></li>
+          
+            <li><a href="https://blog.simplypatrick.com/tags/octopress">octopress <span class="badge">3</span></a></li>
+          
+            <li><a href="https://blog.simplypatrick.com/tags/osx">osx <span class="badge">4</span></a></li>
+          
+            <li><a href="https://blog.simplypatrick.com/tags/patterns">patterns <span class="badge">4</span></a></li>
+          
+            <li><a href="https://blog.simplypatrick.com/tags/process">process <span class="badge">2</span></a></li>
+          
+            <li><a href="https://blog.simplypatrick.com/tags/ruby">ruby <span class="badge">15</span></a></li>
+          
+            <li><a href="https://blog.simplypatrick.com/tags/rust">rust <span class="badge">3</span></a></li>
+          
+            <li><a href="https://blog.simplypatrick.com/tags/scala">scala <span class="badge">3</span></a></li>
+          
+            <li><a href="https://blog.simplypatrick.com/tags/startup">startup <span class="badge">3</span></a></li>
+          
+            <li><a href="https://blog.simplypatrick.com/tags/web">web <span class="badge">2</span></a></li>
+          
+            <li><a href="https://blog.simplypatrick.com/tags/webkit">webkit <span class="badge">3</span></a></li>
+          
+            <li><a href="https://blog.simplypatrick.com/tags/windows">windows <span class="badge">5</span></a></li>
+          
+            <li><a href="https://blog.simplypatrick.com/tags/work">work <span class="badge">11</span></a></li>
+          
+          </ul>
+        </li>
+      </ul>
+      <form class="navbar-form navbar-left" role="search" action="https://google.com/search" method="get">
+        <div class="form-group">
+          <input type="hidden" name="as_sitesearch" value="blog.simplypatrick.com">
+          <input class="form-control" type="text" name="q" results="0" placeholder="search">
+        </div>
+        <button type="submit" class="btn btn-default">submit</button>
+      </form>
+      <ul class="nav navbar-nav navbar-right">
+        <li><a href="https://blog.simplypatrick.com/pages/about">about</a></li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+    </div>
+
+  <div class="row">
+    <div class="col-md-9">
+          <div class="row">
+      <div class="col-xs-6">
+        
+        <section id="prev" class="text-left">
+          <a class="previous" href="https://blog.simplypatrick.com/posts/2018/02-14-kotlin-coroutines-and-threads/">
+            <span class="glyphicon glyphicon-circle-arrow-left"></span>
+            Kotlin Coroutines and Threads
+          </a>
+        </section>
+        
+      </div>
+      <div class="col-xs-6">
+        
+        <section id="next" class="text-right">
+
+          <a class="next" href="https://blog.simplypatrick.com/posts/2018/03-12-c++-conan/">
+            C++ 套件管理: 使用 Conan
+            <span class="glyphicon glyphicon-circle-arrow-right"></span>
+          </a>
+        </section>
+        
+      </div>
+    </div>
+      <h2 class="post-title">C++ 單元測試: 使用 Catch2</h2>
+      <div class="post-meta">
+        <span class="post-date">March 10, 2018</span>
+        
+        <a href="https://blog.simplypatrick.com/categories/programming"><span class="label label-info">programming</span></a>
+        
+        
+        <a href="https://blog.simplypatrick.com/tags/c++"><span class="label label-primary">c++</span></a>
+        
+      </div>
+      
+<div>
+  
+  <hr>
+  <p>
+    <a href="https://blog.simplypatrick.com/posts/2018/03-10-catch2/" id="series"></a>
+    這篇文章屬於 <b>Modern C++</b> 系列:
+  </p>
+
+  
+  
+  <ul class="series">
+  
+    <li>Mar 11, 2018 - <a href="https://blog.simplypatrick.com/posts/2018/03-12-c++-conan/">C++ 套件管理: 使用 Conan</a></li>
+  
+    <li>Mar 10, 2018 - <a href="https://blog.simplypatrick.com/posts/2018/03-10-catch2/">C++ 單元測試: 使用 Catch2</a></li>
+  
+  </ul>
+</div>
+
+
+      <div class="post-content">
+        <h3 id="catch2-介紹">Catch2 介紹</h3>
+<p>介紹一下最近有在使用的一個 C++ test framework, <a href="https://github.com/catchorg/Catch2">Catch2</a>，它對自己的描述是:</p>
+<blockquote>
+<p>A modern, C++-native, header-only, test framework for unit-tests, TDD and BDD - using C++11, C++14, C++17 and later (or C++03 on the Catch1.x branch)</p>
+</blockquote>
+<p>我主要的用途是做一些 C++ 小程式的簡單驗證，因此<strong>簡單易用</strong>是我首要的選擇條件，而 Catch2 應該是目前找的到最好的選擇，例如這是個 <a href="https://en.wikipedia.org/wiki/Huffman_coding">Huffman coding</a> 的測試代碼:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4" class=" language-c"><code class="++ language-c" data-lang="c++"><span class="token function">TEST_CASE</span><span class="token punctuation">(</span><span class="token string">"HuffmanEncoding"</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    vector<span class="token operator">&lt;</span>Symbol<span class="token operator">&gt;</span> symbols<span class="token punctuation">{</span>
+            <span class="token punctuation">{</span><span class="token string">'a'</span><span class="token punctuation">,</span> <span class="token number">8.17</span><span class="token punctuation">}</span><span class="token punctuation">,</span> <span class="token punctuation">{</span><span class="token string">'b'</span><span class="token punctuation">,</span> <span class="token number">1.49</span><span class="token punctuation">}</span><span class="token punctuation">,</span> <span class="token punctuation">{</span><span class="token string">'c'</span><span class="token punctuation">,</span> <span class="token number">2.78</span><span class="token punctuation">}</span><span class="token punctuation">,</span> <span class="token punctuation">{</span><span class="token string">'d'</span><span class="token punctuation">,</span> <span class="token number">4.25</span><span class="token punctuation">}</span><span class="token punctuation">,</span>
+            <span class="token punctuation">{</span><span class="token string">'e'</span><span class="token punctuation">,</span> <span class="token number">12.7</span><span class="token punctuation">}</span><span class="token punctuation">,</span> <span class="token punctuation">{</span><span class="token string">'f'</span><span class="token punctuation">,</span> <span class="token number">2.23</span><span class="token punctuation">}</span><span class="token punctuation">,</span> <span class="token punctuation">{</span><span class="token string">'g'</span><span class="token punctuation">,</span> <span class="token number">2.02</span><span class="token punctuation">}</span><span class="token punctuation">,</span> <span class="token punctuation">{</span><span class="token string">'h'</span><span class="token punctuation">,</span> <span class="token number">6.09</span><span class="token punctuation">}</span><span class="token punctuation">,</span>
+            <span class="token punctuation">{</span><span class="token string">'i'</span><span class="token punctuation">,</span> <span class="token number">6.97</span><span class="token punctuation">}</span><span class="token punctuation">,</span> <span class="token punctuation">{</span><span class="token string">'j'</span><span class="token punctuation">,</span> <span class="token number">0.15</span><span class="token punctuation">}</span><span class="token punctuation">,</span> <span class="token punctuation">{</span><span class="token string">'k'</span><span class="token punctuation">,</span> <span class="token number">0.77</span><span class="token punctuation">}</span><span class="token punctuation">,</span> <span class="token punctuation">{</span><span class="token string">'l'</span><span class="token punctuation">,</span> <span class="token number">4.03</span><span class="token punctuation">}</span><span class="token punctuation">,</span>
+            <span class="token punctuation">{</span><span class="token string">'m'</span><span class="token punctuation">,</span> <span class="token number">2.41</span><span class="token punctuation">}</span><span class="token punctuation">,</span> <span class="token punctuation">{</span><span class="token string">'n'</span><span class="token punctuation">,</span> <span class="token number">6.75</span><span class="token punctuation">}</span><span class="token punctuation">,</span> <span class="token punctuation">{</span><span class="token string">'o'</span><span class="token punctuation">,</span> <span class="token number">7.51</span><span class="token punctuation">}</span><span class="token punctuation">,</span> <span class="token punctuation">{</span><span class="token string">'p'</span><span class="token punctuation">,</span> <span class="token number">1.93</span><span class="token punctuation">}</span><span class="token punctuation">,</span>
+            <span class="token punctuation">{</span><span class="token string">'q'</span><span class="token punctuation">,</span> <span class="token number">0.10</span><span class="token punctuation">}</span><span class="token punctuation">,</span> <span class="token punctuation">{</span><span class="token string">'r'</span><span class="token punctuation">,</span> <span class="token number">5.99</span><span class="token punctuation">}</span><span class="token punctuation">,</span> <span class="token punctuation">{</span><span class="token string">'s'</span><span class="token punctuation">,</span> <span class="token number">6.33</span><span class="token punctuation">}</span><span class="token punctuation">,</span> <span class="token punctuation">{</span><span class="token string">'t'</span><span class="token punctuation">,</span> <span class="token number">9.06</span><span class="token punctuation">}</span><span class="token punctuation">,</span>
+            <span class="token punctuation">{</span><span class="token string">'u'</span><span class="token punctuation">,</span> <span class="token number">2.76</span><span class="token punctuation">}</span><span class="token punctuation">,</span> <span class="token punctuation">{</span><span class="token string">'v'</span><span class="token punctuation">,</span> <span class="token number">0.98</span><span class="token punctuation">}</span><span class="token punctuation">,</span> <span class="token punctuation">{</span><span class="token string">'w'</span><span class="token punctuation">,</span> <span class="token number">2.36</span><span class="token punctuation">}</span><span class="token punctuation">,</span> <span class="token punctuation">{</span><span class="token string">'x'</span><span class="token punctuation">,</span> <span class="token number">0.15</span><span class="token punctuation">}</span><span class="token punctuation">,</span>
+            <span class="token punctuation">{</span><span class="token string">'y'</span><span class="token punctuation">,</span> <span class="token number">1.97</span><span class="token punctuation">}</span><span class="token punctuation">,</span> <span class="token punctuation">{</span><span class="token string">'z'</span><span class="token punctuation">,</span> <span class="token number">0.07</span><span class="token punctuation">}</span><span class="token punctuation">,</span>
+    <span class="token punctuation">}</span><span class="token punctuation">;</span>
+
+    <span class="token function">HuffmanEncoding</span><span class="token punctuation">(</span>symbols<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token function">REQUIRE</span><span class="token punctuation">(</span>symbols<span class="token punctuation">[</span><span class="token string">'a'</span> <span class="token operator">-</span> <span class="token string">'a'</span><span class="token punctuation">]</span><span class="token punctuation">.</span>code <span class="token operator">==</span> <span class="token string">"1110"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">REQUIRE</span><span class="token punctuation">(</span>symbols<span class="token punctuation">[</span><span class="token string">'e'</span> <span class="token operator">-</span> <span class="token string">'a'</span><span class="token punctuation">]</span><span class="token punctuation">.</span>code <span class="token operator">==</span> <span class="token string">"100"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">REQUIRE</span><span class="token punctuation">(</span>symbols<span class="token punctuation">[</span><span class="token string">'t'</span> <span class="token operator">-</span> <span class="token string">'a'</span><span class="token punctuation">]</span><span class="token punctuation">.</span>code <span class="token operator">==</span> <span class="token string">"000"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">REQUIRE</span><span class="token punctuation">(</span>symbols<span class="token punctuation">[</span><span class="token string">'z'</span> <span class="token operator">-</span> <span class="token string">'a'</span><span class="token punctuation">]</span><span class="token punctuation">.</span>code <span class="token operator">==</span> <span class="token string">"001001000"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre></div><p>可以看到代碼非常地簡潔而易懂，你只要學怎麼用 <code>TEST_CASE</code> 及 <code>REQUIRE</code> 就好了。</p>
+<h3 id="如何使用-catch">如何使用 Catch</h3>
+<p>中文的介紹可以參考 <a href="http://blog.guorongfei.com/2016/08/22/cpp-unit-test-catch/">“C++ 的单元测试工具 —— Catch | 时习之”</a>，只是關於如何 <code>#include "catch.hpp"</code> 的部分我覺得描述的不是很精確，建議可以讀一下 <a href="https://github.com/catchorg/Catch2/blob/master/docs/slow-compiles.md">“Why do my tests take so long to compile?"</a>。</p>
+<p>真的很介意 compile time 受到影響的人，可以考慮關掉一些沒用到的功能來加速編譯: <a href="https://github.com/catchorg/Catch2/blob/master/docs/configuration.md#other-toggles">Catch2/configuration</a>。</p>
+<h3 id="catch2-的原理">Catch2 的原理</h3>
+<h3 id="神奇的-require">神奇的 REQUIRE</h3>
+<p>有用過其他的 C++ test framework 例如 <a href="https://github.com/google/googletest">googletest</a> 的人，應該會對 Catch 的 <code>REQUIRE</code> 感到好奇:</p>
+<p>為什麼 googletest 需要使用較不自然的 <code>ASSERT_EQ(a, b)</code>, <code>ASSERT_NE(a, b)</code> 而 Catch 只需要寫 <code>REQUIRE(a == b)</code> 及 <code>REQUIRE(a != b)</code>？</p>
+<h4 id="拆解表達式-decomposing-an-expression">拆解表達式 (Decomposing an expression)</h4>
+<p>考慮下列這個有問題的 <code>Factorial</code> 實作及它的測試代碼:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4" class=" language-c"><code class="++ language-c" data-lang="c++"><span class="token keyword">int</span> <span class="token function">Factorial</span><span class="token punctuation">(</span> <span class="token keyword">int</span> number <span class="token punctuation">)</span> <span class="token punctuation">{</span>
+   <span class="token keyword">return</span> number <span class="token operator">&lt;=</span> <span class="token number">1</span> <span class="token operator">?</span> number <span class="token operator">:</span> <span class="token function">Factorial</span><span class="token punctuation">(</span> number <span class="token operator">-</span> <span class="token number">1</span> <span class="token punctuation">)</span> <span class="token operator">*</span> number<span class="token punctuation">;</span>  <span class="token comment">// fail</span>
+<span class="token punctuation">}</span>
+
+<span class="token function">TEST_CASE</span><span class="token punctuation">(</span> <span class="token string">"Factorial of 0 is 1 (fail)"</span><span class="token punctuation">,</span> <span class="token string">"[single-file]"</span> <span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    <span class="token function">REQUIRE</span><span class="token punctuation">(</span> <span class="token function">Factorial</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token number">1</span> <span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre></div><p><code>REQUIRE(Factorial(0) == 1);</code> 會輸出下列的結果:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4" class=" language-c"><code class=" language-c" data-lang="c"><span class="token number">010</span><span class="token operator">-</span>TestCase<span class="token punctuation">.</span>cpp<span class="token operator">:</span><span class="token number">14</span><span class="token operator">:</span> failed<span class="token operator">:</span> <span class="token function">Factorial</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token number">1</span> <span class="token keyword">for</span><span class="token operator">:</span> <span class="token number">0</span> <span class="token operator">==</span> <span class="token number">1</span>
+</code></pre></div><p>這表示 <code>REQUIRE</code> 需要從 <code>Factorial(1) == 1</code> 拆解出下列五個資訊：</p>
+<ol>
+<li>整個表達式 “Factorial(0) == 1” 的字串值</li>
+<li>表達式左邊 Factorial(0) 的結果，也就是 0</li>
+<li>使用的 operator, 也就是 “==”</li>
+<li>表達式右邊 1 的值，也就是常量 1</li>
+<li>表達式的結果，在這個例子是 false</li>
+</ol>
+<p>也就是說 Catch2 必須在 compile time 拆解這個表達式，這裡需要用到一些 <a href="https://en.wikipedia.org/wiki/Template_metaprogramming">template metaprogramming</a> 的技巧。</p>
+<h4 id="require">REQUIRE</h4>
+<p><code>REQUIRE</code> 是用 macro 來定義的，所以整個表達式的字串值可以簡單用 <a href="https://gcc.gnu.org/onlinedocs/gcc-3.4.3/cpp/Stringification.html">stringification</a> 拿到。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4" class=" language-c"><code class="++ language-c" data-lang="c++"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name function">REQUIRE</span><span class="token expression"><span class="token punctuation">(</span> <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> <span class="token punctuation">)</span> <span class="token function">INTERNAL_CATCH_TEST</span><span class="token punctuation">(</span> </span><span class="token string">"REQUIRE"</span><span class="token expression"><span class="token punctuation">,</span> Catch<span class="token operator">::</span>ResultDisposition<span class="token operator">::</span>Normal<span class="token punctuation">,</span> __VA_ARGS__  <span class="token punctuation">)</span></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name function">INTERNAL_CATCH_TEST</span><span class="token expression"><span class="token punctuation">(</span> macroName<span class="token punctuation">,</span> resultDisposition<span class="token punctuation">,</span> <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> <span class="token punctuation">)</span> </span><span class="token punctuation">\</span>
+    <span class="token expression"><span class="token keyword">do</span> <span class="token punctuation">{</span> </span><span class="token punctuation">\</span>
+        <span class="token expression">Catch<span class="token operator">::</span>AssertionHandler <span class="token function">catchAssertionHandler</span><span class="token punctuation">(</span> macroName<span class="token punctuation">,</span> CATCH_INTERNAL_LINEINFO<span class="token punctuation">,</span> <span class="token function">CATCH_INTERNAL_STRINGIFY</span><span class="token punctuation">(</span>__VA_ARGS__<span class="token punctuation">)</span><span class="token punctuation">,</span> resultDisposition <span class="token punctuation">)</span><span class="token punctuation">;</span> </span><span class="token punctuation">\</span>
+        <span class="token expression">INTERNAL_CATCH_TRY <span class="token punctuation">{</span> </span><span class="token punctuation">\</span>
+            <span class="token expression">CATCH_INTERNAL_SUPPRESS_PARENTHESES_WARNINGS </span><span class="token punctuation">\</span>
+            <span class="token expression">catchAssertionHandler<span class="token punctuation">.</span><span class="token function">handleExpr</span><span class="token punctuation">(</span> Catch<span class="token operator">::</span><span class="token function">Decomposer</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">&lt;=</span> __VA_ARGS__ <span class="token punctuation">)</span><span class="token punctuation">;</span> </span><span class="token punctuation">\</span>
+            <span class="token expression">CATCH_INTERNAL_UNSUPPRESS_PARENTHESES_WARNINGS </span><span class="token punctuation">\</span>
+        <span class="token expression"><span class="token punctuation">}</span> <span class="token function">INTERNAL_CATCH_CATCH</span><span class="token punctuation">(</span> catchAssertionHandler <span class="token punctuation">)</span> </span><span class="token punctuation">\</span>
+        <span class="token expression"><span class="token function">INTERNAL_CATCH_REACT</span><span class="token punctuation">(</span> catchAssertionHandler <span class="token punctuation">)</span> </span><span class="token punctuation">\</span>
+    <span class="token expression"><span class="token punctuation">}</span> <span class="token keyword">while</span><span class="token punctuation">(</span> <span class="token punctuation">(</span><span class="token keyword">void</span><span class="token punctuation">)</span><span class="token number">0</span><span class="token punctuation">,</span> false <span class="token operator">&amp;&amp;</span> static_cast<span class="token operator">&lt;</span>bool<span class="token operator">&gt;</span><span class="token punctuation">(</span> <span class="token operator">!</span><span class="token operator">!</span><span class="token punctuation">(</span>__VA_ARGS__<span class="token punctuation">)</span> <span class="token punctuation">)</span> <span class="token punctuation">)</span> </span><span class="token comment">// the expression here is never evaluated at runtime but it forces the compiler to give it a look</span></span>
+    <span class="token comment">// The double negation silences MSVC's C4800 warning, the static_cast forces short-circuit evaluation if the type has overloaded &amp;&amp;.</span>
+</code></pre></div><h4 id="catchdecomposer">Catch::Decomposer</h4>
+<p>而 2, 3, 4 的部分就要靠 <code>Catch::Decomposer</code>，這裡用的
+template metaprogramming 技巧叫作 <a href="https://en.wikipedia.org/wiki/Expression_templates">expression template</a>。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4" class=" language-c"><code class="++ language-c" data-lang="c++"><span class="token keyword">struct</span> <span class="token class-name">Decomposer</span> <span class="token punctuation">{</span>
+    template<span class="token operator">&lt;</span>typename T<span class="token operator">&gt;</span>
+    <span class="token keyword">auto</span> operator <span class="token operator">&lt;=</span> <span class="token punctuation">(</span> T <span class="token keyword">const</span><span class="token operator">&amp;</span> lhs <span class="token punctuation">)</span> <span class="token operator">-&gt;</span> ExprLhs<span class="token operator">&lt;</span>T <span class="token keyword">const</span><span class="token operator">&amp;</span><span class="token operator">&gt;</span> <span class="token punctuation">{</span>
+        <span class="token keyword">return</span> ExprLhs<span class="token operator">&lt;</span>T <span class="token keyword">const</span><span class="token operator">&amp;</span><span class="token operator">&gt;</span><span class="token punctuation">{</span> lhs <span class="token punctuation">}</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">auto</span> operator <span class="token operator">&lt;=</span> <span class="token punctuation">(</span> bool value <span class="token punctuation">)</span> <span class="token operator">-&gt;</span> ExprLhs<span class="token operator">&lt;</span>bool<span class="token operator">&gt;</span> <span class="token punctuation">{</span>
+        <span class="token keyword">return</span> ExprLhs<span class="token operator">&lt;</span>bool<span class="token operator">&gt;</span><span class="token punctuation">{</span> value <span class="token punctuation">}</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span><span class="token punctuation">;</span>
+</code></pre></div><p><code>Decomposer</code> 用 <code>&lt;=</code> 跟表達式的左邊結合變成 <code>ExprLhs&lt;T const &amp;&gt;</code>，<code>ExprLhs</code> 是個 C++ template:</p>
+<h4 id="exprlhs">ExprLhs</h4>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4" class=" language-c"><code class="++ language-c" data-lang="c++">template<span class="token operator">&lt;</span>typename LhsT<span class="token operator">&gt;</span>
+class ExprLhs <span class="token punctuation">{</span>
+    LhsT m_lhs<span class="token punctuation">;</span>
+public<span class="token operator">:</span>
+    explicit <span class="token function">ExprLhs</span><span class="token punctuation">(</span> LhsT lhs <span class="token punctuation">)</span> <span class="token operator">:</span> <span class="token function">m_lhs</span><span class="token punctuation">(</span> lhs <span class="token punctuation">)</span> <span class="token punctuation">{</span><span class="token punctuation">}</span>
+
+    template<span class="token operator">&lt;</span>typename RhsT<span class="token operator">&gt;</span>
+    <span class="token keyword">auto</span> operator <span class="token operator">==</span> <span class="token punctuation">(</span> RhsT <span class="token keyword">const</span><span class="token operator">&amp;</span> rhs <span class="token punctuation">)</span> <span class="token operator">-&gt;</span> BinaryExpr<span class="token operator">&lt;</span>LhsT<span class="token punctuation">,</span> RhsT <span class="token keyword">const</span><span class="token operator">&amp;</span><span class="token operator">&gt;</span> <span class="token keyword">const</span> <span class="token punctuation">{</span>
+        <span class="token keyword">return</span> <span class="token punctuation">{</span> <span class="token function">compareEqual</span><span class="token punctuation">(</span> m_lhs<span class="token punctuation">,</span> rhs <span class="token punctuation">)</span><span class="token punctuation">,</span> m_lhs<span class="token punctuation">,</span> <span class="token string">"=="</span><span class="token punctuation">,</span> rhs <span class="token punctuation">}</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    <span class="token keyword">auto</span> operator <span class="token operator">==</span> <span class="token punctuation">(</span> bool rhs <span class="token punctuation">)</span> <span class="token operator">-&gt;</span> BinaryExpr<span class="token operator">&lt;</span>LhsT<span class="token punctuation">,</span> bool<span class="token operator">&gt;</span> <span class="token keyword">const</span> <span class="token punctuation">{</span>
+        <span class="token keyword">return</span> <span class="token punctuation">{</span> m_lhs <span class="token operator">==</span> rhs<span class="token punctuation">,</span> m_lhs<span class="token punctuation">,</span> <span class="token string">"=="</span><span class="token punctuation">,</span> rhs <span class="token punctuation">}</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    template<span class="token operator">&lt;</span>typename RhsT<span class="token operator">&gt;</span>
+    <span class="token keyword">auto</span> operator <span class="token operator">!=</span> <span class="token punctuation">(</span> RhsT <span class="token keyword">const</span><span class="token operator">&amp;</span> rhs <span class="token punctuation">)</span> <span class="token operator">-&gt;</span> BinaryExpr<span class="token operator">&lt;</span>LhsT<span class="token punctuation">,</span> RhsT <span class="token keyword">const</span><span class="token operator">&amp;</span><span class="token operator">&gt;</span> <span class="token keyword">const</span> <span class="token punctuation">{</span>
+        <span class="token keyword">return</span> <span class="token punctuation">{</span> <span class="token function">compareNotEqual</span><span class="token punctuation">(</span> m_lhs<span class="token punctuation">,</span> rhs <span class="token punctuation">)</span><span class="token punctuation">,</span> m_lhs<span class="token punctuation">,</span> <span class="token string">"!="</span><span class="token punctuation">,</span> rhs <span class="token punctuation">}</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    <span class="token keyword">auto</span> operator <span class="token operator">!=</span> <span class="token punctuation">(</span> bool rhs <span class="token punctuation">)</span> <span class="token operator">-&gt;</span> BinaryExpr<span class="token operator">&lt;</span>LhsT<span class="token punctuation">,</span> bool<span class="token operator">&gt;</span> <span class="token keyword">const</span> <span class="token punctuation">{</span>
+        <span class="token keyword">return</span> <span class="token punctuation">{</span> m_lhs <span class="token operator">!=</span> rhs<span class="token punctuation">,</span> m_lhs<span class="token punctuation">,</span> <span class="token string">"!="</span><span class="token punctuation">,</span> rhs <span class="token punctuation">}</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    template<span class="token operator">&lt;</span>typename RhsT<span class="token operator">&gt;</span>
+    <span class="token keyword">auto</span> operator <span class="token operator">&gt;</span> <span class="token punctuation">(</span> RhsT <span class="token keyword">const</span><span class="token operator">&amp;</span> rhs <span class="token punctuation">)</span> <span class="token operator">-&gt;</span> BinaryExpr<span class="token operator">&lt;</span>LhsT<span class="token punctuation">,</span> RhsT <span class="token keyword">const</span><span class="token operator">&amp;</span><span class="token operator">&gt;</span> <span class="token keyword">const</span> <span class="token punctuation">{</span>
+        <span class="token keyword">return</span> <span class="token punctuation">{</span> m_lhs <span class="token operator">&gt;</span> rhs<span class="token punctuation">,</span> m_lhs<span class="token punctuation">,</span> <span class="token string">"&gt;"</span><span class="token punctuation">,</span> rhs <span class="token punctuation">}</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    template<span class="token operator">&lt;</span>typename RhsT<span class="token operator">&gt;</span>
+    <span class="token keyword">auto</span> operator <span class="token operator">&lt;</span> <span class="token punctuation">(</span> RhsT <span class="token keyword">const</span><span class="token operator">&amp;</span> rhs <span class="token punctuation">)</span> <span class="token operator">-&gt;</span> BinaryExpr<span class="token operator">&lt;</span>LhsT<span class="token punctuation">,</span> RhsT <span class="token keyword">const</span><span class="token operator">&amp;</span><span class="token operator">&gt;</span> <span class="token keyword">const</span> <span class="token punctuation">{</span>
+        <span class="token keyword">return</span> <span class="token punctuation">{</span> m_lhs <span class="token operator">&lt;</span> rhs<span class="token punctuation">,</span> m_lhs<span class="token punctuation">,</span> <span class="token string">"&lt;"</span><span class="token punctuation">,</span> rhs <span class="token punctuation">}</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    template<span class="token operator">&lt;</span>typename RhsT<span class="token operator">&gt;</span>
+    <span class="token keyword">auto</span> operator <span class="token operator">&gt;=</span> <span class="token punctuation">(</span> RhsT <span class="token keyword">const</span><span class="token operator">&amp;</span> rhs <span class="token punctuation">)</span> <span class="token operator">-&gt;</span> BinaryExpr<span class="token operator">&lt;</span>LhsT<span class="token punctuation">,</span> RhsT <span class="token keyword">const</span><span class="token operator">&amp;</span><span class="token operator">&gt;</span> <span class="token keyword">const</span> <span class="token punctuation">{</span>
+        <span class="token keyword">return</span> <span class="token punctuation">{</span> m_lhs <span class="token operator">&gt;=</span> rhs<span class="token punctuation">,</span> m_lhs<span class="token punctuation">,</span> <span class="token string">"&gt;="</span><span class="token punctuation">,</span> rhs <span class="token punctuation">}</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    template<span class="token operator">&lt;</span>typename RhsT<span class="token operator">&gt;</span>
+    <span class="token keyword">auto</span> operator <span class="token operator">&lt;=</span> <span class="token punctuation">(</span> RhsT <span class="token keyword">const</span><span class="token operator">&amp;</span> rhs <span class="token punctuation">)</span> <span class="token operator">-&gt;</span> BinaryExpr<span class="token operator">&lt;</span>LhsT<span class="token punctuation">,</span> RhsT <span class="token keyword">const</span><span class="token operator">&amp;</span><span class="token operator">&gt;</span> <span class="token keyword">const</span> <span class="token punctuation">{</span>
+        <span class="token keyword">return</span> <span class="token punctuation">{</span> m_lhs <span class="token operator">&lt;=</span> rhs<span class="token punctuation">,</span> m_lhs<span class="token punctuation">,</span> <span class="token string">"&lt;="</span><span class="token punctuation">,</span> rhs <span class="token punctuation">}</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">auto</span> <span class="token function">makeUnaryExpr</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token keyword">const</span> <span class="token operator">-&gt;</span> UnaryExpr<span class="token operator">&lt;</span>LhsT<span class="token operator">&gt;</span> <span class="token punctuation">{</span>
+        <span class="token keyword">return</span> UnaryExpr<span class="token operator">&lt;</span>LhsT<span class="token operator">&gt;</span><span class="token punctuation">{</span> m_lhs <span class="token punctuation">}</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span><span class="token punctuation">;</span>
+</code></pre></div><p><code>ExprLhr</code> 利用 operator overloading 來知道是用那個 operator 跟表達式的右邊做運算，最後把整個表達式轉換成一個 <code>BinaryExpr</code>。</p>
+<h4 id="binaryexpr">BinaryExpr</h4>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4" class=" language-c"><code class="++ language-c" data-lang="c++">template<span class="token operator">&lt;</span>typename LhsT<span class="token punctuation">,</span> typename RhsT<span class="token operator">&gt;</span>
+class BinaryExpr  <span class="token operator">:</span> public ITransientExpression <span class="token punctuation">{</span>
+    LhsT m_lhs<span class="token punctuation">;</span>
+    StringRef m_op<span class="token punctuation">;</span>
+    RhsT m_rhs<span class="token punctuation">;</span>
+
+public<span class="token operator">:</span>
+    <span class="token function">BinaryExpr</span><span class="token punctuation">(</span> bool comparisonResult<span class="token punctuation">,</span> LhsT lhs<span class="token punctuation">,</span> StringRef op<span class="token punctuation">,</span> RhsT rhs <span class="token punctuation">)</span>
+    <span class="token operator">:</span>   ITransientExpression<span class="token punctuation">{</span> true<span class="token punctuation">,</span> comparisonResult <span class="token punctuation">}</span><span class="token punctuation">,</span>
+        <span class="token function">m_lhs</span><span class="token punctuation">(</span> lhs <span class="token punctuation">)</span><span class="token punctuation">,</span>
+        <span class="token function">m_op</span><span class="token punctuation">(</span> op <span class="token punctuation">)</span><span class="token punctuation">,</span>
+        <span class="token function">m_rhs</span><span class="token punctuation">(</span> rhs <span class="token punctuation">)</span>
+    <span class="token punctuation">{</span><span class="token punctuation">}</span>
+<span class="token punctuation">}</span><span class="token punctuation">;</span>
+</code></pre></div><p>之前我們提到的 2, 3, 4, 5 的資訊就存在 <code>BinaryExpr</code> 的 <code>m_lhs</code>, <code>m_op</code>, <code>m_rhs</code>, 及 <code>ITransientExpression</code> 裡面。</p>
+<h3 id="搭配-clion-使用">搭配 CLion 使用</h3>
+<p>另外我還蠻推薦使用 JetBrains 的 C++ IDE: <a href="https://www.jetbrains.com/clion/">CLion</a>，它目前有<a href="https://blog.jetbrains.com/clion/2017/03/to-catch-a-clion/">內建 Catch2 的支援</a>，用它執行測試非常地簡單方便:</p>
+<img width="100%" src="./03_files/failing-test.png">
+
+      </div>
+
+      <hr>
+      <div id="disqus_recommendations" style="margin-bottom: 12px;"><iframe id="dsq-app7517" name="dsq-app7517" allowtransparency="true" frameborder="0" scrolling="no" tabindex="0" title="Disqus" width="100%" src="./03_files/saved_resource(1).html" style="width: 100% !important; border: none !important; overflow: hidden !important; height: 0px !important; display: inline !important; box-sizing: border-box !important;" horizontalscrolling="no" verticalscrolling="no"></iframe></div><div id="disqus_thread"><iframe id="dsq-app1885" name="dsq-app1885" allowtransparency="true" frameborder="0" scrolling="no" tabindex="0" title="Disqus" width="100%" src="./03_files/saved_resource(2).html" style="width: 1px !important; min-width: 100% !important; border: none !important; overflow: hidden !important; height: 394px !important;" horizontalscrolling="no" verticalscrolling="no"></iframe></div>
+<script>
+
+
+
+
+(function() { 
+var d = document, s = d.createElement('script');
+
+s.src = '//simplypatrick.disqus.com/embed.js';
+
+s.setAttribute('data-timestamp', +new Date());
+(d.head || d.body).appendChild(s);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
+
+    </div>
+    <div class="col-md-3">
+      <aside class="toc" style="">
+        
+
+
+
+
+
+
+<nav id="toc" data-toggle="toc">
+  
+  <ul class="nav">
+  </ul>
+<ul class="nav"><li class=""><a href="https://blog.simplypatrick.com/posts/2018/03-10-catch2/#catch2-%E4%BB%8B%E7%B4%B9">Catch2 介紹</a></li><li class=""><a href="https://blog.simplypatrick.com/posts/2018/03-10-catch2/#%E5%A6%82%E4%BD%95%E4%BD%BF%E7%94%A8-catch">如何使用 Catch</a></li><li class=""><a href="https://blog.simplypatrick.com/posts/2018/03-10-catch2/#catch2-%E7%9A%84%E5%8E%9F%E7%90%86">Catch2 的原理</a></li><li class=""><a href="https://blog.simplypatrick.com/posts/2018/03-10-catch2/#%E7%A5%9E%E5%A5%87%E7%9A%84-require">神奇的 REQUIRE</a><ul class="nav"><li class=""><a href="https://blog.simplypatrick.com/posts/2018/03-10-catch2/#%E6%8B%86%E8%A7%A3%E8%A1%A8%E9%81%94%E5%BC%8F-decomposing-an-expression">拆解表達式 (Decomposing an expression)</a></li><li class=""><a href="https://blog.simplypatrick.com/posts/2018/03-10-catch2/#require">REQUIRE</a></li><li class=""><a href="https://blog.simplypatrick.com/posts/2018/03-10-catch2/#catchdecomposer">Catch::Decomposer</a></li><li class=""><a href="https://blog.simplypatrick.com/posts/2018/03-10-catch2/#exprlhs">ExprLhs</a></li><li class=""><a href="https://blog.simplypatrick.com/posts/2018/03-10-catch2/#binaryexpr">BinaryExpr</a></li></ul></li><li class="active"><a href="https://blog.simplypatrick.com/posts/2018/03-10-catch2/#%E6%90%AD%E9%85%8D-clion-%E4%BD%BF%E7%94%A8">搭配 CLion 使用</a></li></ul></nav>
+
+      </aside>
+    </div>
+  </div>
+    </div>
+
+    <div class="row">
+    <div class="col-md-12">
+      <footer id="footer" class="text-center">
+        © Patrick Tsai 2003-2019.
+        Proudly powered by <a href="https://gohugo.io/">Hugo</a>.
+      </footer>
+    </div>
+  </div>
+
+  <script src="./03_files/jquery.min.js.下載"></script>
+  <script src="./03_files/bootstrap.min.js.下載"></script>
+  <script src="./03_files/bootstrap-toc.min.js.下載"></script>
+  <script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-73968064-1', 'auto');
+  ga('send', 'pageview');
+
+</script>
+
+
+  <script src="./03_files/prism.js.下載"></script>
+
+
+
+<iframe style="display: none;" src="./03_files/saved_resource(3).html"></iframe><iframe style="display: none;" src="./03_files/saved_resource(4).html"></iframe></body></html>
